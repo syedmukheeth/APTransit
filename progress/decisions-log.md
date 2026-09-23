@@ -72,6 +72,14 @@ The only way to change a locked doc in `docs/`. Add an entry, agree at the daily
 - **Decision:** same body, HTTP 200 when db and redis are ok, 503 when either is down. `Cache-Control: no-store`.
 - **Status:** Proposed, review at the Day 1 sync
 
+### D-007 · Next.js agent files turned off
+- **Date:** 2026-09-23
+- **Raised by:** Dev A
+- **Doc affected:** AGENTS.md
+- **Problem:** `next dev` writes its own AGENTS.md and CLAUDE.md into apps/web when it runs under an AI tool. They contain em dashes and would fail `pnpm check:dashes` for everyone.
+- **Decision:** `agentRules: false` in apps/web/next.config.ts. Its one useful hint (read the Next.js docs bundled in node_modules) is now hard rule 12 in the root AGENTS.md.
+- **Status:** Proposed, review at the Day 1 sync
+
 ### D-008 · Audit overrides for the Prisma CLI
 - **Date:** 2026-09-23
 - **Raised by:** Dev B

@@ -1,0 +1,18 @@
+import type { NextConfig } from "next";
+
+// Same origin API (docs/06, Basics): the browser calls /api/v1 on the web origin and Next
+// forwards it to the NestJS API. This keeps the refresh cookie first party.
+const apiUrl = (process.env.API_URL ?? "http://localhost:4000").replace(/\/$/, "");
+
+const nextConfig: NextConfig = {
+  poweredByHeader: false,
+  // Our rules live in the root AGENTS.md. Stop `next dev` from writing its own AGENTS.md and
+  // CLAUDE.md into apps/web (they break pnpm check:dashes).
+  agentRules: false,
+  transpilePackages: ["@aptransit/ui"],
+  async rewrites() {
+    return [{ source: "/api/v1/:path*", destination: `${apiUrl}/api/v1/:path*` }];
+  },
+};
+
+export default nextConfig;

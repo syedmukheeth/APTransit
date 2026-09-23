@@ -112,9 +112,11 @@ Newer majors exist for some tools (NestJS 12, TypeScript 7, ESLint 10, Vitest 5,
 | unplugin-swc / @swc/core | 2.0.0 / 1.16.2 |
 | eslint / typescript-eslint | 9.39.5 / 8.70.1 |
 | prettier | 3.9.9 |
-| next | filled by Dev A on Day 1 |
-| react | filled by Dev A on Day 1 |
-| tailwindcss | filled by Dev A on Day 1 |
+| next / eslint-config-next | 16.3.6 / 16.3.6 |
+| react, react-dom | 19.3.0 |
+| tailwindcss, @tailwindcss/postcss | 4.3.3 |
+| clsx / tailwind-merge | 2.1.1 / 3.7.0 |
+| eslint-plugin-jsx-a11y | 6.10.2 |
 | socket.io | installed on Day 11 |
 | bullmq | installed on Day 5 |
 | next-intl | installed on Day 3 |

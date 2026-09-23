@@ -1,0 +1,355 @@
+/*
+ * AP TransitOS design tokens.
+ * Source of truth: docs/09-design-system.md. Every text pair was checked for WCAG 2.2 AA.
+ * Raw colour values live only in this file. Components use the Tailwind classes mapped below
+ * (bg-surface, text-muted, border-strong, text-status-warning, and so on), never hex values.
+ *
+ * Import after Tailwind:  @import "tailwindcss";  @import "@aptransit/ui/tokens.css";
+ */
+
+/* ---------- Light (default) ---------- */
+:root {
+  /* surfaces and borders */
+  --bg: #ffffff;
+  --surface: #f6f7f9;
+  --surface-raised: #ffffff;
+  --border: #e4e7ec;
+  --border-strong: #7c8799;
+
+  /* text */
+  --text: #0e1621;
+  --text-muted: #475467;
+  --text-subtle: #667085;
+
+  /* brand */
+  --primary: #1d4ed8;
+  --primary-hover: #1e40af;
+  --primary-soft: #eef3ff;
+  --on-primary: #ffffff;
+
+  /* status tones: text colour, soft background, solid background (white text on solid) */
+  --success: #15803d;
+  --success-soft: #eef8f2;
+  --info: #1d4ed8;
+  --info-soft: #eef3ff;
+  --warning: #b45309;
+  --warning-soft: #fef6ea;
+  --danger: #b91c1c;
+  --danger-soft: #fef0f0;
+  --maintenance: #6d28d9;
+  --maintenance-soft: #f4f0fe;
+  --neutral: #475467;
+  --neutral-soft: #f2f4f7;
+  --on-solid: #ffffff;
+
+  /* elevation (cards use a border, not a shadow) */
+  --elevation-sm: 0 1px 2px 0 rgb(16 24 40 / 0.06);
+  --elevation-md: 0 4px 12px -2px rgb(16 24 40 / 0.1), 0 2px 4px -2px rgb(16 24 40 / 0.06);
+  --elevation-lg: 0 16px 32px -8px rgb(16 24 40 / 0.16), 0 4px 8px -4px rgb(16 24 40 / 0.08);
+
+  color-scheme: light;
+}
+
+/* ---------- Dark: system preference unless the user picked light ---------- */
+@media (prefers-color-scheme: dark) {
+  :root:not([data-theme="light"]) {
+    --bg: #0b1118;
+    --surface: #121a24;
+    --surface-raised: #1a2431;
+    --border: #2a3645;
+    --border-strong: #6b7a90;
+    --text: #e9eef4;
+    --text-muted: #a9b4c2;
+    --text-subtle: #8a96a6;
+    --primary: #7aa2ff;
+    --primary-hover: #9dbbff;
+    --primary-soft: #15244a;
+    --on-primary: #0b1118;
+    --success: #4ade80;
+    --success-soft: #12301f;
+    --info: #8ab0ff;
+    --info-soft: #15244a;
+    --warning: #fbbf24;
+    --warning-soft: #33260a;
+    --danger: #fb8a8a;
+    --danger-soft: #3a1515;
+    --maintenance: #c4b5fd;
+    --maintenance-soft: #271d45;
+    --neutral: #a9b4c2;
+    --neutral-soft: #1e2733;
+    --elevation-sm: 0 1px 2px 0 rgb(0 0 0 / 0.4);
+    --elevation-md: 0 4px 12px -2px rgb(0 0 0 / 0.5), 0 2px 4px -2px rgb(0 0 0 / 0.4);
+    --elevation-lg: 0 16px 32px -8px rgb(0 0 0 / 0.6), 0 4px 8px -4px rgb(0 0 0 / 0.4);
+    color-scheme: dark;
+  }
+}
+
+/* ---------- Dark: user picked dark ---------- */
+:root[data-theme="dark"] {
+  --bg: #0b1118;
+  --surface: #121a24;
+  --surface-raised: #1a2431;
+  --border: #2a3645;
+  --border-strong: #6b7a90;
+  --text: #e9eef4;
+  --text-muted: #a9b4c2;
+  --text-subtle: #8a96a6;
+  --primary: #7aa2ff;
+  --primary-hover: #9dbbff;
+  --primary-soft: #15244a;
+  --on-primary: #0b1118;
+  --success: #4ade80;
+  --success-soft: #12301f;
+  --info: #8ab0ff;
+  --info-soft: #15244a;
+  --warning: #fbbf24;
+  --warning-soft: #33260a;
+  --danger: #fb8a8a;
+  --danger-soft: #3a1515;
+  --maintenance: #c4b5fd;
+  --maintenance-soft: #271d45;
+  --neutral: #a9b4c2;
+  --neutral-soft: #1e2733;
+  --elevation-sm: 0 1px 2px 0 rgb(0 0 0 / 0.4);
+  --elevation-md: 0 4px 12px -2px rgb(0 0 0 / 0.5), 0 2px 4px -2px rgb(0 0 0 / 0.4);
+  --elevation-lg: 0 16px 32px -8px rgb(0 0 0 / 0.6), 0 4px 8px -4px rgb(0 0 0 / 0.4);
+  color-scheme: dark;
+}
+
+/* ---------- Theme independent tokens ---------- */
+:root {
+  /* Solid status backgrounds use the light text colour in both themes (docs/09), white text on top. */
+  --success-solid: #15803d;
+  --info-solid: #1d4ed8;
+  --warning-solid: #b45309;
+  --danger-solid: #b91c1c;
+  --maintenance-solid: #6d28d9;
+  --neutral-solid: #475467;
+
+  /* Colour of the day for the ticket anti fraud band. Shown with its name in text too. */
+  --day-mon: #1d4ed8;
+  --day-tue: #15803d;
+  --day-wed: #6d28d9;
+  --day-thu: #b45309;
+  --day-fri: #0e7490;
+  --day-sat: #be185d;
+  --day-sun: #b91c1c;
+
+  /* Page gutter: 16 mobile, 24 tablet, 32 desktop */
+  --gutter: 1rem;
+
+  /* Layers */
+  --z-sticky: 10;
+  --z-header: 20;
+  --z-overlay: 40;
+  --z-sheet: 50;
+  --z-dialog: 60;
+  --z-toast: 70;
+
+  /* Motion */
+  --dur-fast: 120ms;
+  --dur-base: 200ms;
+  --dur-slow: 320ms;
+
+  /* Telugu glyphs are taller: line heights go up by this factor when lang is te */
+  --leading-te: 1.15;
+}
+
+@media (min-width: 768px) {
+  :root {
+    --gutter: 1.5rem;
+  }
+}
+
+@media (min-width: 1024px) {
+  :root {
+    --gutter: 2rem;
+  }
+}
+
+/* ---------- Tailwind theme: only our tokens exist ---------- */
+@theme {
+  --color-*: initial;
+  --font-*: initial;
+  --text-*: initial;
+  --radius-*: initial;
+  --shadow-*: initial;
+  --ease-*: initial;
+
+  --font-sans: var(--font-inter), var(--font-telugu), ui-sans-serif, system-ui, sans-serif;
+  --font-mono: ui-monospace, "SFMono-Regular", Menlo, Consolas, monospace;
+
+  /* Type scale (size / line height / weight) */
+  --text-display: 2.25rem;
+  --text-display--line-height: 2.75rem;
+  --text-display--font-weight: 600;
+  --text-h1: 1.75rem;
+  --text-h1--line-height: 2.25rem;
+  --text-h1--font-weight: 600;
+  --text-h2: 1.375rem;
+  --text-h2--line-height: 1.875rem;
+  --text-h2--font-weight: 600;
+  --text-h3: 1.125rem;
+  --text-h3--line-height: 1.625rem;
+  --text-h3--font-weight: 600;
+  --text-body-lg: 1.0625rem;
+  --text-body-lg--line-height: 1.625rem;
+  --text-body: 1rem;
+  --text-body--line-height: 1.5rem;
+  --text-small: 0.875rem;
+  --text-small--line-height: 1.25rem;
+  --text-caption: 0.75rem;
+  --text-caption--line-height: 1rem;
+  --text-caption--font-weight: 500;
+
+  /* Radius */
+  --radius-sm: 6px;
+  --radius-md: 10px;
+  --radius-lg: 14px;
+  --radius-xl: 20px;
+  --radius-full: 9999px;
+
+  /* Easing */
+  --ease-out: cubic-bezier(0.2, 0, 0, 1);
+  --ease-in: cubic-bezier(0.4, 0, 1, 1);
+}
+
+@theme inline {
+  --color-bg: var(--bg);
+  --color-surface: var(--surface);
+  --color-surface-raised: var(--surface-raised);
+  --color-default: var(--border);
+  --color-strong: var(--border-strong);
+  --color-fg: var(--text);
+  --color-muted: var(--text-muted);
+  --color-subtle: var(--text-subtle);
+  --color-primary: var(--primary);
+  --color-primary-hover: var(--primary-hover);
+  --color-primary-soft: var(--primary-soft);
+  --color-on-primary: var(--on-primary);
+  --color-on-solid: var(--on-solid);
+
+  --color-status-success: var(--success);
+  --color-status-success-soft: var(--success-soft);
+  --color-status-success-solid: var(--success-solid);
+  --color-status-info: var(--info);
+  --color-status-info-soft: var(--info-soft);
+  --color-status-info-solid: var(--info-solid);
+  --color-status-warning: var(--warning);
+  --color-status-warning-soft: var(--warning-soft);
+  --color-status-warning-solid: var(--warning-solid);
+  --color-status-danger: var(--danger);
+  --color-status-danger-soft: var(--danger-soft);
+  --color-status-danger-solid: var(--danger-solid);
+  --color-status-maintenance: var(--maintenance);
+  --color-status-maintenance-soft: var(--maintenance-soft);
+  --color-status-maintenance-solid: var(--maintenance-solid);
+  --color-status-neutral: var(--neutral);
+  --color-status-neutral-soft: var(--neutral-soft);
+  --color-status-neutral-solid: var(--neutral-solid);
+
+  --color-day-mon: var(--day-mon);
+  --color-day-tue: var(--day-tue);
+  --color-day-wed: var(--day-wed);
+  --color-day-thu: var(--day-thu);
+  --color-day-fri: var(--day-fri);
+  --color-day-sat: var(--day-sat);
+  --color-day-sun: var(--day-sun);
+
+  --shadow-sm: var(--elevation-sm);
+  --shadow-md: var(--elevation-md);
+  --shadow-lg: var(--elevation-lg);
+
+  --spacing-gutter: var(--gutter);
+}
+
+/* Named layers and durations, so nobody types raw numbers */
+@utility z-sticky {
+  z-index: var(--z-sticky);
+}
+@utility z-header {
+  z-index: var(--z-header);
+}
+@utility z-overlay {
+  z-index: var(--z-overlay);
+}
+@utility z-sheet {
+  z-index: var(--z-sheet);
+}
+@utility z-dialog {
+  z-index: var(--z-dialog);
+}
+@utility z-toast {
+  z-index: var(--z-toast);
+}
+@utility duration-fast {
+  transition-duration: var(--dur-fast);
+}
+@utility duration-base {
+  transition-duration: var(--dur-base);
+}
+@utility duration-slow {
+  transition-duration: var(--dur-slow);
+}
+
+/* ---------- Base layer ---------- */
+@layer base {
+  html {
+    -webkit-text-size-adjust: 100%;
+  }
+
+  body {
+    background-color: var(--bg);
+    color: var(--text);
+    font-family: var(--font-sans);
+    font-size: var(--text-body);
+    line-height: var(--text-body--line-height);
+    -webkit-font-smoothing: antialiased;
+    -moz-osx-font-smoothing: grayscale;
+    text-rendering: optimizeLegibility;
+    /* Long Telugu compound words must wrap instead of pushing the page sideways */
+    overflow-wrap: break-word;
+  }
+
+  /* One visible focus ring everywhere, never removed (docs/09, Accessibility).
+     The resting outline colour is primary too, so transition-colors never flashes another colour. */
+  *,
+  ::before,
+  ::after {
+    outline-color: var(--primary);
+  }
+
+  :focus-visible {
+    outline: 2px solid var(--primary);
+    outline-offset: 2px;
+  }
+
+  ::selection {
+    background-color: var(--primary-soft);
+    color: var(--text);
+  }
+
+  /* Telugu: taller line heights for every type token */
+  :lang(te) {
+    --text-display--line-height: calc(2.75rem * var(--leading-te));
+    --text-h1--line-height: calc(2.25rem * var(--leading-te));
+    --text-h2--line-height: calc(1.875rem * var(--leading-te));
+    --text-h3--line-height: calc(1.625rem * var(--leading-te));
+    --text-body-lg--line-height: calc(1.625rem * var(--leading-te));
+    --text-body--line-height: calc(1.5rem * var(--leading-te));
+    --text-small--line-height: calc(1.25rem * var(--leading-te));
+    --text-caption--line-height: calc(1rem * var(--leading-te));
+  }
+}
+
+/* Reduced motion: keep fades, drop movement (docs/09, Motion) */
+@media (prefers-reduced-motion: reduce) {
+  *,
+  *::before,
+  *::after {
+    animation-duration: 0.01ms !important;
+    animation-iteration-count: 1 !important;
+    scroll-behavior: auto !important;
+    transition-property: opacity !important;
+  }
+}

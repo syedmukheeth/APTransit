@@ -14,6 +14,8 @@ allowBuilds:
   '@prisma/engines': true
   '@swc/core': true
   prisma: true
+  # eslint-config-next resolver: prebuilt binaries ship as optional deps, its postinstall is not needed
+  unrs-resolver: false
 
 # Versions pinned on Day 1 that were newer than pnpm's minimum release age at the time.
 minimumReleaseAgeExclude:

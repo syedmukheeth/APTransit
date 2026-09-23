@@ -1,0 +1,5 @@
+@import "tailwindcss";
+@import "@aptransit/ui/tokens.css";
+
+/* Tailwind also scans the shared component package for class names. */
+@source "../../../packages/ui/src";

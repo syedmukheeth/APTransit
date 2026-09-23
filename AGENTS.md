@@ -49,7 +49,8 @@ progress/         daily log + decisions log
 9. **Accessibility is not optional.** WCAG 2.2 AA. Touch targets at least 44 px (56 px in driver and conductor apps). Visible focus ring. Works with keyboard and screen reader.
 10. **Every screen has four states:** loading (skeleton), empty, error (with retry), success. See `docs/11-screens.md`.
 11. **Business rules are not invented.** If a rule is not in `docs/07-ticket-and-pass-rules.md`, ask. Do not guess fares, refund rates or eligibility.
-12. **No secrets in code or logs.** Use `.env` (never committed). Never log OTPs, tokens, payment signatures or full phone numbers outside dev mode.
+12. **Check the installed framework docs, not memory.** Next.js 16 ships its own guides in `apps/web/node_modules/next/dist/docs/`. APIs may differ from what an AI tool learned. Read the relevant guide before using a Next.js API you are unsure about.
+13. **No secrets in code or logs.** Use `.env` (never committed). Never log OTPs, tokens, payment signatures or full phone numbers outside dev mode.
 
 ## Commits and pull requests
 
