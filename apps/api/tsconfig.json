@@ -1,0 +1,12 @@
+{
+  "extends": "@aptransit/config/tsconfig.base.json",
+  "compilerOptions": {
+    "module": "nodenext",
+    "moduleResolution": "nodenext",
+    "emitDecoratorMetadata": true,
+    "experimentalDecorators": true,
+    "outDir": "dist",
+    "types": ["node"]
+  },
+  "include": ["src", "test", "prisma.config.ts"]
+}

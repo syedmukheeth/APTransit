@@ -7,7 +7,7 @@
 | Tool | Version rule | Why |
 | --- | --- | --- |
 | Node.js | 22 LTS | Both devs already have 22.20 |
-| pnpm | latest 10.x via `corepack enable` | Fast, strict workspaces |
+| pnpm | 11.x, pinned in root `packageManager` (decision D-001) | Fast, strict workspaces, blocks untrusted install scripts |
 | Turborepo | latest 2.x | Task caching, `pnpm dev` runs web and api together |
 | TypeScript | latest stable 5.x, `strict: true` | One language end to end |
 | ESLint 9 (flat config) + typescript-eslint + eslint-plugin-jsx-a11y | latest | Catch bugs and a11y issues early |
@@ -92,15 +92,30 @@ zod only. No runtime dependency on React or Nest.
 
 ## Version record (filled once on Day 1 by Dev B, then locked)
 
+Newer majors exist for some tools (NestJS 12, TypeScript 7, ESLint 10, Vitest 5, Prisma 8 release candidate). We stay on the majors above for the 20 days (decision D-003).
+
 | Package | Exact version |
 | --- | --- |
-| next | |
-| react | |
-| tailwindcss | |
-| @nestjs/core | |
-| prisma | |
-| socket.io | |
-| bullmq | |
-| next-intl | |
-| maplibre-gl | |
-| typescript | |
+| node | 22.20.0 (engines: 22.12 or newer) |
+| pnpm | 11.10.0 |
+| turbo | 2.11.3 |
+| typescript | 5.9.3 |
+| zod | 4.6.5 |
+| @nestjs/core, common, platform-express, testing | 11.2.6 |
+| @nestjs/config | 4.0.4 |
+| @nestjs/cli | 11.0.24 |
+| prisma, @prisma/client, @prisma/adapter-pg | 7.10.0 |
+| ioredis | 5.11.1 |
+| nestjs-pino / pino / pino-http | 5.2.0 / 10.3.1 / 11.0.0 |
+| helmet | 8.3.0 |
+| vitest | 4.1.11 |
+| unplugin-swc / @swc/core | 2.0.0 / 1.16.2 |
+| eslint / typescript-eslint | 9.39.5 / 8.70.1 |
+| prettier | 3.9.9 |
+| next | filled by Dev A on Day 1 |
+| react | filled by Dev A on Day 1 |
+| tailwindcss | filled by Dev A on Day 1 |
+| socket.io | installed on Day 11 |
+| bullmq | installed on Day 5 |
+| next-intl | installed on Day 3 |
+| maplibre-gl | installed on Day 12 |

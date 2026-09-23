@@ -1,0 +1,27 @@
+packages:
+  - apps/*
+  - packages/*
+
+# Only these dependencies may run install scripts (pnpm blocks all others by default).
+allowBuilds:
+  '@prisma/engines': true
+  '@swc/core': true
+  prisma: true
+
+# Versions pinned on Day 1 that were newer than pnpm's minimum release age at the time.
+minimumReleaseAgeExclude:
+  - '@nestjs/common@11.2.6'
+  - '@nestjs/core@11.2.6'
+  - '@nestjs/platform-express@11.2.6'
+  - '@nestjs/testing@11.2.6'
+  - '@turbo/darwin-64@2.11.3'
+  - '@turbo/darwin-arm64@2.11.3'
+  - '@turbo/linux-64@2.11.3'
+  - '@turbo/linux-arm64@2.11.3'
+  - '@turbo/windows-64@2.11.3'
+  - '@turbo/windows-arm64@2.11.3'
+  - prettier@3.9.9
+  - turbo@2.11.3
+
+# Run package scripts with a POSIX like shell on every OS, so "WORKER=1 cmd" works on Windows too.
+shellEmulator: true

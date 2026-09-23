@@ -1,0 +1,27 @@
+{
+  "name": "aptransit",
+  "private": true,
+  "packageManager": "pnpm@11.10.0",
+  "engines": {
+    "node": ">=22.12"
+  },
+  "scripts": {
+    "dev": "turbo dev",
+    "dev:worker": "pnpm --filter api dev:worker",
+    "build": "turbo build",
+    "lint": "turbo lint && pnpm check:dashes",
+    "typecheck": "turbo typecheck",
+    "test": "turbo test && pnpm test:scripts",
+    "test:scripts": "node --test \"scripts/**/*.test.mjs\"",
+    "check:dashes": "node scripts/check-dashes.mjs",
+    "format": "prettier --write .",
+    "db:migrate": "pnpm --filter api db:migrate",
+    "db:seed": "pnpm --filter api db:seed",
+    "db:reset": "pnpm --filter api db:reset"
+  },
+  "devDependencies": {
+    "@aptransit/config": "workspace:*",
+    "prettier": "3.9.9",
+    "turbo": "2.11.3"
+  }
+}

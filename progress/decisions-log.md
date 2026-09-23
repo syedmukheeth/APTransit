@@ -24,6 +24,54 @@ The only way to change a locked doc in `docs/`. Add an entry, agree at the daily
 - **Decision:** docs 00 to 19, 99 and ADR 001 to 005 are the baseline. Stack, scope and rules as written.
 - **Status:** Agreed
 
+### D-001 · pnpm 11 instead of 10
+- **Date:** 2026-09-23
+- **Raised by:** Dev B
+- **Doc affected:** docs/04-tech-stack.md (Runtime and tooling)
+- **Problem:** docs said pnpm 10.x, but pnpm 11 is installed on the dev machine and is current.
+- **Decision:** pin `pnpm@11.10.0` in the root `packageManager`. Install scripts are allowed only for prisma, @prisma/engines and @swc/core (`allowBuilds` in pnpm-workspace.yaml).
+- **Status:** Proposed, review at the Day 1 sync
+
+### D-002 · Tooling packages missing from docs/04
+- **Date:** 2026-09-23
+- **Raised by:** Dev B
+- **Doc affected:** docs/04-tech-stack.md
+- **Problem:** the listed libraries need a few companions that docs/04 did not name.
+- **Decision:** allowed as tooling or required peers: @nestjs/cli and @nestjs/testing (build, watch, tests), @swc/core (for unplugin-swc), @eslint/js and globals (ESLint flat config), reflect-metadata and rxjs (Nest peers), pino and pino-http (nestjs-pino peers), @types/* packages, eslint-config-next (Next.js lint rules including React hooks).
+- **Status:** Proposed, review at the Day 1 sync
+
+### D-003 · Stay on the documented majors
+- **Date:** 2026-09-23
+- **Raised by:** Dev B
+- **Doc affected:** docs/04-tech-stack.md
+- **Problem:** NestJS 12, TypeScript 7, ESLint 10, Vitest 5 and a Prisma 8 release candidate are out.
+- **Decision:** keep NestJS 11, TypeScript 5.9, ESLint 9, Prisma 7 as documented. Vitest (not pinned in docs) is pinned to 4.1 for stability. Revisit after Day 20.
+- **Status:** Proposed, review at the Day 1 sync
+
+### D-004 · Prisma config without dotenv
+- **Date:** 2026-09-23
+- **Raised by:** Dev B
+- **Doc affected:** docs/15-env-setup.md (Prisma with Neon)
+- **Problem:** Prisma 7 does not load .env, and `env('DIRECT_URL')` fails in CI where no database secret exists.
+- **Decision:** prisma.config.ts loads .env with the Node 22 built in `process.loadEnvFile` and reads `process.env.DIRECT_URL`, so `prisma generate` works without secrets. Generated client goes to `apps/api/src/generated/prisma` (git ignored, CommonJS).
+- **Status:** Proposed, review at the Day 1 sync
+
+### D-005 · packages/shared is compiled to CommonJS
+- **Date:** 2026-09-23
+- **Raised by:** Dev B
+- **Doc affected:** docs/03-architecture.md (Monorepo layout)
+- **Problem:** Nest runs as CommonJS, Next bundles anything. Shared TS source cannot be imported by Nest directly.
+- **Decision:** `packages/shared` builds with tsc to `dist` (CommonJS plus types). Turbo builds it before dev, lint, typecheck and test. `packages/ui` stays source only (only Next uses it, via transpilePackages).
+- **Status:** Proposed, review at the Day 1 sync
+
+### D-006 · Health answers 503 when degraded
+- **Date:** 2026-09-23
+- **Raised by:** Dev B
+- **Doc affected:** docs/06-api-contract.md (GET /health)
+- **Problem:** docs/06 gives the body only. Render health checks and uptime monitors read the status code.
+- **Decision:** same body, HTTP 200 when db and redis are ok, 503 when either is down. `Cache-Control: no-store`.
+- **Status:** Proposed, review at the Day 1 sync
+
 ## Parked (ideas outside the 20 day scope)
 
 | Idea | Raised by | Plan sec |

@@ -75,7 +75,7 @@ BullMQ polls Redis while idle. With the default `drainDelay` of 5 s one idle wor
 
 ## Prisma with Neon (Prisma 7)
 
-- `apps/api/prisma.config.ts` sets `datasource.url` to `env('DIRECT_URL')` for the CLI.
+- `apps/api/prisma.config.ts` loads `.env` with `process.loadEnvFile` and sets `datasource.url` to `process.env.DIRECT_URL` for the CLI (decision D-004).
 - `schema.prisma` datasource has no `url`.
 - `PrismaService` builds the client with `new PrismaPg({ connectionString: process.env.DATABASE_URL })`.
 - Neon sleeps after idle. First query after sleep takes about 1 s. Fine for dev; warm staging before demos.

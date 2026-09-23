@@ -1,0 +1,22 @@
+// AP TransitOS database schema. Source of truth: docs/05-data-model.md.
+// Day 1 holds only the settings table. The full schema v1 lands on Day 2.
+
+generator client {
+  provider     = "prisma-client"
+  output       = "../src/generated/prisma"
+  moduleFormat = "cjs"
+}
+
+datasource db {
+  provider = "postgresql"
+}
+
+model Setting {
+  key         String   @id
+  value       Json
+  updatedById String?
+  createdAt   DateTime @default(now())
+  updatedAt   DateTime @updatedAt
+
+  @@map("settings")
+}

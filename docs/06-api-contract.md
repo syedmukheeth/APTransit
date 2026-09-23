@@ -42,7 +42,7 @@ Auth column: `public`, `user` (any logged in), or role names from [08](08-roles-
 
 | Method | Path | Auth | Body or query | Returns | Day |
 | --- | --- | --- | --- | --- | --- |
-| GET | /health | public | | `{ status, db, redis, version, time }` | 1 |
+| GET | /health | public | | `{ status, db, redis, version, time }`. HTTP 200 when db and redis are ok, 503 when degraded (decision D-006) | 1 |
 | POST | /auth/otp/request | public | `{ channel: EMAIL or PHONE, target }` | 202 `{ expiresInSec: 300, resendInSec: 30 }`. Dev only: `devCode` when `OTP_DEV_ECHO=1` | 3 |
 | POST | /auth/otp/verify | public | `{ channel, target, code }` | `{ accessToken, user: MeDto }` + sets `apt_rt` | 3 |
 | POST | /auth/refresh | cookie | | `{ accessToken }` + rotates `apt_rt` | 3 |
