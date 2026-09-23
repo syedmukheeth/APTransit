@@ -19,12 +19,13 @@ Severity: **S1** blocks the demo (fix today), **S2** wrong behaviour (fix this w
 - Booted the compiled API and worker with a fake env: health answers 503 with db and redis down, live Razorpay key is refused at boot.
 
 **Merged PRs**
-- Pending: `b/skeleton` (open the PR on GitHub, no gh CLI on this machine).
+- `b/skeleton`: fast forwarded into `main` on 2026-09-23 (no PR, at the owner's request).
 
 **Carry over (starts tomorrow before the new prompt)**
 - Fill `apps/api/.env` once the accounts exist, run `pnpm db:migrate` on dev-a and dev-b, confirm `/api/v1/health` shows db ok and redis ok.
 - Add `TEST_DATABASE_URL` (Neon test branch) as a GitHub Actions secret so the integration test runs in CI.
 - Protect `main` on GitHub: PR required, 1 approval, CI required.
+- Check the first GitHub Actions run (triggered by the push to `main`).
 
 **Contract changes (packages/shared)**
 - New: enums, errors, status, money, `HealthDto`.
@@ -47,7 +48,7 @@ Severity: **S1** blocks the demo (fix today), **S2** wrong behaviour (fix this w
 - Temporary token check page at `/` (delete on Day 3). Checked at 360, 768, 1280 px, light, dark and system, English and Telugu, keyboard focus.
 
 **Merged PRs**
-- Pending: `a/web-scaffold` (builds on `b/skeleton`).
+- `a/web-scaffold`: fast forwarded into `main` on 2026-09-23 (no PR, at the owner's request).
 
 **Carry over (starts tomorrow before the new prompt)**
 - Create the accounts from docs/15 and share them through the password manager.

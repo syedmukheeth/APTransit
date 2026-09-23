@@ -20,11 +20,10 @@ Read order for a new session:
 
 | Branch | Contains | Status |
 | --- | --- | --- |
-| `main` | Build kit only (docs, prompts, progress) | Protected after Day 1 merges |
-| `b/skeleton` | Monorepo, shared contracts, API with health, CI | Pushed. PR to `main` not opened yet |
-| `a/web-scaffold` | Everything in `b/skeleton` plus `packages/ui`, `apps/web`, Day 1 logs, this handoff | Pushed. Builds on `b/skeleton` |
+| `main` | Build kit plus all Day 1 code | `b/skeleton` and `a/web-scaffold` fast forwarded into `main` on 2026-09-23 (no PRs, no GitHub CI run yet) |
+| `b/skeleton`, `a/web-scaffold` | Same commits as `main` | Done. Safe to delete on GitHub |
 
-**Before Day 2 starts:** merge PR 1 (`b/skeleton` into `main`) with "Create a merge commit", then PR 2 (`a/web-scaffold` into `main`). A merge commit on PR 1 keeps PR 2 small. From Day 2 on, squash merge (docs/16). If the PRs are still open when you start, branch from `a/web-scaffold` and rebase later.
+**Day 2 starts from `main`:** `git checkout main && git pull`, then branch `a/<topic>` or `b/<topic>`. From Day 2 on, every change goes through a PR and is squash merged (docs/16). The first Day 2 PR is also the first GitHub CI run: check it is green.
 
 ### Works today (verified)
 
@@ -43,8 +42,8 @@ Read order for a new session:
 | `pnpm db:migrate` on dev-a and dev-b | Needs Neon | Start of Day 2 (Dev B) |
 | API against real Neon and Upstash | Needs `.env` | Start of Day 2 (Dev B) |
 | `TEST_DATABASE_URL` GitHub secret | Needs Neon test branch | Day 2 |
-| Branch protection on `main` | GitHub settings, human only | After PR 1 and 2 merge |
-| CI run on GitHub | CI runs on PRs and pushes to `main`; no PR opened yet | First PR |
+| Branch protection on `main` | GitHub settings, human only | Now (PR required, 1 approval, CI required) |
+| CI run on GitHub | The push to `main` triggers the first run | Check it on the Actions tab |
 | `pnpm db:seed`, `pnpm db:reset` | Placeholders that exit 1 | Day 2 (Dev B) |
 | Token check page at `/` | Temporary | Delete on Day 3 (Dev A) |
 | Worker has no queues | Keeps itself alive with an interval | Day 5 (Dev B) |
