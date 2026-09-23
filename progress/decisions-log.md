@@ -29,7 +29,7 @@ The only way to change a locked doc in `docs/`. Add an entry, agree at the daily
 - **Raised by:** Dev B
 - **Doc affected:** docs/04-tech-stack.md (Runtime and tooling)
 - **Problem:** docs said pnpm 10.x, but pnpm 11 is installed on the dev machine and is current.
-- **Decision:** pin `pnpm@11.10.0` in the root `packageManager`. Install scripts are allowed only for prisma, @prisma/engines and @swc/core (`allowBuilds` in pnpm-workspace.yaml).
+- **Decision:** pin `pnpm@11.10.0` in the root `packageManager`. Install scripts are allowed only for prisma, @prisma/engines and @swc/core (`allowBuilds` in pnpm-workspace.yaml). pnpm 11 reads settings from pnpm-workspace.yaml, so `autoInstallPeers` lives there and there is no `.npmrc`.
 - **Status:** Proposed, review at the Day 1 sync
 
 ### D-002 · Tooling packages missing from docs/04
@@ -70,6 +70,14 @@ The only way to change a locked doc in `docs/`. Add an entry, agree at the daily
 - **Doc affected:** docs/06-api-contract.md (GET /health)
 - **Problem:** docs/06 gives the body only. Render health checks and uptime monitors read the status code.
 - **Decision:** same body, HTTP 200 when db and redis are ok, 503 when either is down. `Cache-Control: no-store`.
+- **Status:** Proposed, review at the Day 1 sync
+
+### D-008 · Audit overrides for the Prisma CLI
+- **Date:** 2026-09-23
+- **Raised by:** Dev B
+- **Doc affected:** docs/17-deployment.md (CI audit step)
+- **Problem:** `pnpm audit --prod` reported 2 high and 1 moderate advisories in `mysql2` and `deepmerge-ts`, both pulled in by the Prisma CLI. CI fails on high.
+- **Decision:** pnpm `overrides` pin `mysql2@3.24.4` and `deepmerge-ts@8.0.2`. Prisma generate, validate and migrate diff verified after the change. Remove the overrides once Prisma ships patched versions.
 - **Status:** Proposed, review at the Day 1 sync
 
 ## Parked (ideas outside the 20 day scope)

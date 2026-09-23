@@ -2,6 +2,13 @@ packages:
   - apps/*
   - packages/*
 
+autoInstallPeers: true
+
+# Security patches for dependencies of the Prisma CLI (pnpm audit, Day 1). Remove once Prisma ships them.
+overrides:
+  mysql2: 3.24.4
+  deepmerge-ts: 8.0.2
+
 # Only these dependencies may run install scripts (pnpm blocks all others by default).
 allowBuilds:
   '@prisma/engines': true
