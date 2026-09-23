@@ -8,9 +8,11 @@ AP TransitOS is one connected public transport platform for Andhra Pradesh: citi
 
 ## Read before any task
 
-1. `docs/00-index.md` (map of all docs).
-2. Today's prompt in `prompts/day-NN.md`.
-3. The docs that prompt lists under "Read first".
+1. `progress/handoff.md`: what exists today, how it works, patterns to copy, known gotchas. Always read it fully.
+2. `docs/00-index.md` (map of all docs).
+3. Today's prompt in `prompts/day-NN.md`.
+4. The docs that prompt lists under "Read first".
+5. The README of every package you will touch: `apps/api`, `apps/web`, `packages/shared`, `packages/ui`, `packages/config`.
 
 The docs in `docs/` are **locked**. Do not edit them during a feature task. If a doc is wrong or missing something, stop, write the question in `progress/decisions-log.md`, and tell the human. A locked doc changes only after both devs agree and the decision is logged.
 
@@ -64,17 +66,22 @@ progress/         daily log + decisions log
 ## Commands
 
 ```bash
-pnpm install          # install everything
+pnpm install          # install everything (needs pnpm 11: npm i -g pnpm@11)
 pnpm dev              # web on :3000, api on :4000
+pnpm dev:worker       # background worker (WORKER=1)
 pnpm lint             # eslint + check:dashes
 pnpm typecheck        # tsc across the repo
-pnpm test             # vitest across the repo
-pnpm e2e              # playwright (needs dev servers running)
-pnpm db:migrate       # prisma migrate dev (Dev B)
-pnpm db:seed          # seed AP demo data
+pnpm test             # vitest across the repo + script tests
+pnpm build            # build everything
+pnpm db:migrate       # prisma migrate dev on your own Neon branch (Dev B)
+pnpm db:seed          # seed AP demo data (from Day 2)
+pnpm e2e              # playwright (from Day 5)
 pnpm check:dashes     # fails on U+2014 or U+2013
+pnpm --filter api exec prisma <command>   # any Prisma CLI command
 ```
 
 ## Definition of done
 
 See `prompts/_shared/definition-of-done.md`. A task is not done until every box is checked and the end of day report is written in `progress/daily-log.md`.
+
+At the end of every day, update the "Current state" section of `progress/handoff.md` (git state, what works, what is not done, new decisions, new gotchas) and the package READMEs if a pattern changed. The next session, human or AI, starts from that file.

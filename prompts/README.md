@@ -6,12 +6,12 @@ One file per day, `day-01.md` to `day-20.md`. Each file has a prompt for **Dev A
 
 1. Pull `main`. Read the whole day file (5 minutes), both halves, so you know what the other dev is building.
 2. Open your AI tool in the repo root (Claude Code, Codex, Cursor, anything).
-3. Paste `_shared/context-preamble.md` first.
+3. Paste `_shared/context-preamble.md` first. It makes the tool read `progress/handoff.md` (the current state of the repo) before anything else.
 4. Paste your prompt block (the fenced `text` block under your name) as the next message.
 5. Let the tool plan first. Read its plan. Push back on anything that breaks `AGENTS.md` or the docs.
 6. Work in small commits on your branch (`a/...` or `b/...`). Review every diff yourself before committing. You own the code, not the tool.
 7. At the sync point: demo to each other, merge in the order given, tick "Done when".
-8. Write your end of day report with `_shared/end-of-day-report.md` into `progress/daily-log.md`.
+8. Write your end of day report with `_shared/end-of-day-report.md` into `progress/daily-log.md`, and update the "Current state" section of `progress/handoff.md` (the dev who merges last does this).
 
 ## Rules for using these prompts
 

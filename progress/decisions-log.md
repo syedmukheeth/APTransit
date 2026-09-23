@@ -88,6 +88,22 @@ The only way to change a locked doc in `docs/`. Add an entry, agree at the daily
 - **Decision:** pnpm `overrides` pin `mysql2@3.24.4` and `deepmerge-ts@8.0.2`. Prisma generate, validate and migrate diff verified after the change. Remove the overrides once Prisma ships patched versions.
 - **Status:** Proposed, review at the Day 1 sync
 
+### D-009 · Render build command runs the db:deploy script
+- **Date:** 2026-09-23
+- **Raised by:** Dev B
+- **Doc affected:** docs/17-deployment.md (Render)
+- **Problem:** `pnpm --filter api prisma migrate deploy` fails: pnpm looks for a script named `prisma`, not the binary.
+- **Decision:** the build command ends with `pnpm --filter api db:deploy` (script: `prisma migrate deploy`). Any other Prisma CLI call uses `pnpm --filter api exec prisma ...`. docs/17 updated.
+- **Status:** Proposed, review at the Day 2 sync
+
+### D-010 · Component test tooling for packages/ui
+- **Date:** 2026-09-23
+- **Raised by:** Dev A
+- **Doc affected:** docs/04-tech-stack.md (Testing), docs/14-testing-qa.md (Component tests)
+- **Problem:** docs/14 asks for component tests with Testing Library, but docs/04 does not list the packages they need.
+- **Decision:** allowed as dev dependencies of `packages/ui` (and later `apps/web`): `@testing-library/react`, `@testing-library/user-event`, `@testing-library/jest-dom`, `jsdom`. Vitest runs with `environment: "jsdom"` there.
+- **Status:** Proposed, review at the Day 2 sync
+
 ## Parked (ideas outside the 20 day scope)
 
 | Idea | Raised by | Plan sec |

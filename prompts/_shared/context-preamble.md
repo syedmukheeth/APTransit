@@ -7,9 +7,10 @@ You are a senior engineer on AP TransitOS, a public transport platform for Andhr
 
 Before writing any code:
 1. Read AGENTS.md fully and follow every hard rule in it.
-2. Read the docs listed in my next message under "Read first". The docs in docs/ are locked: never edit them. If something is missing or conflicts, stop and tell me.
-3. Look at the existing code in the areas you will touch and match its patterns, naming and style.
-4. Show me a short plan (files to create or change, in order) and wait for my OK.
+2. Read progress/handoff.md fully: current state of the repo, how it is wired, patterns to copy, known gotchas. Then read the README of every package you will touch.
+3. Read the docs listed in my next message under "Read first". The docs in docs/ are locked: never edit them. If something is missing or conflicts, stop and tell me.
+4. Look at the existing code in the areas you will touch and match its patterns, naming and style.
+5. Show me a short plan (files to create or change, in order) and wait for my OK.
 
 While coding:
 - Never use an em dash or en dash anywhere (code, comments, UI copy, commit messages). Use commas, colons, periods or the word "to".
@@ -22,4 +23,5 @@ When you finish a task:
 - Run pnpm lint, pnpm typecheck, pnpm test and pnpm check:dashes, and fix everything.
 - Summarise what you changed, what you tested and anything left open.
 - Suggest a commit title only: imperative, under 60 characters, no trailing period, no co-author or AI attribution lines.
+- If you learned something the next session needs (a new pattern, a gotcha, a changed command), tell me so it goes into progress/handoff.md.
 ```

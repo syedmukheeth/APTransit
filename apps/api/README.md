@@ -1,0 +1,100 @@
+# apps/api
+
+NestJS 11 API and background worker for AP TransitOS. Owner: Dev B. Contract: `docs/06-api-contract.md`. Current state and gotchas: `progress/handoff.md`.
+
+## Run
+
+```bash
+cp .env.example .env            # fill real values (docs/15). Never commit .env
+pnpm --filter api generate      # Prisma client into src/generated/prisma (Turbo also does this)
+pnpm db:migrate                 # from the repo root, on your own Neon branch
+pnpm dev                        # from the repo root: web :3000 and api :4000
+pnpm dev:worker                 # worker process (WORKER=1)
+```
+
+Check it: `http://localhost:4000/api/v1/health` answers 200 with `db: "ok"` and `redis: "ok"`. 503 means one of them is unreachable (check `.env`).
+
+## Scripts
+
+| Script | What it does |
+| --- | --- |
+| `generate` | `prisma generate` (update notice hidden) |
+| `build` | `nest build` into `dist/` (`dist/main.js`, `dist/worker.js`) |
+| `dev`, `dev:worker` | watch mode for the API or the worker |
+| `start`, `start:worker` | run the build |
+| `typecheck`, `lint`, `test` | tsc, eslint, vitest |
+| `db:migrate` | `prisma migrate dev` |
+| `db:deploy` | `prisma migrate deploy` (Render build, docs/17) |
+| `db:studio` | Prisma Studio |
+| `db:seed`, `db:reset` | placeholders until Day 2, they exit 1 |
+
+Run Prisma directly with `pnpm --filter api exec prisma <command>` (not `pnpm --filter api prisma`).
+
+## Layout
+
+```
+src/
+  main.ts                 HTTP entry: NestFactory + configureHttpApp + listen on 0.0.0.0:PORT
+  worker.ts               worker entry, requires WORKER=1, BullMQ consumers from Day 5
+  http-app.ts             configureHttpApp(app): logger, trust proxy, helmet, CORS, 100 kb JSON, prefix api/v1
+  app.module.ts           Config (zod), Logger (pino), Prisma, Redis, feature modules, global error filter
+  config/env.ts           EnvSchema + validateEnv: the only list of env vars
+  common/
+    errors/app-error.ts   AppError(code, message, details?) with status from ERROR_HTTP_STATUS
+    filters/all-exceptions.filter.ts   every error becomes the docs/06 shape, 5xx hide details
+    decorators/public.decorator.ts     @Public() for routes without login (guard arrives Day 3)
+    logger.ts             pino params: request ids, redaction list, health requests not logged
+  prisma/                 PrismaService (Prisma 7, pg adapter, pooled URL, lazy connect)
+  redis/                  RedisService (ioredis, lazy connect, throttled error logs)
+  modules/<area>/         one folder per feature module (health is the reference)
+  generated/prisma/       generated client, git ignored
+prisma/
+  schema.prisma           mirrors docs/05 (only settings so far)
+  migrations/             committed SQL migrations
+prisma.config.ts          Prisma 7 CLI config: loads .env with process.loadEnvFile, uses DIRECT_URL
+test/
+  setup-env.ts            fills process.env before any test imports AppModule
+  test-env.ts             complete fake env (add every new env var here)
+  http.test.ts            full HTTP pipeline with fake Prisma and Redis
+  health.int.test.ts      real Neon test branch, runs only with TEST_DATABASE_URL
+```
+
+## Adding a feature module
+
+1. Schemas first: `packages/shared/src/schemas/<area>.ts` (`<Thing>Input`, `<Thing>Dto`, `<Thing>Query`), exported from `packages/shared/src/index.ts`.
+2. `src/modules/<area>/<area>.module.ts`, `.controller.ts`, `.service.ts`, `.service.test.ts`. Import the module in `app.module.ts`.
+3. Controllers stay thin: validate, call the service, return a Dto. Business rules live in services or dedicated rule files (docs/07 names them).
+4. Fail with `throw new AppError("CODE", "Plain message", { detail })`. Codes only from `packages/shared/src/errors.ts`.
+5. Inject with value imports (`import { PrismaService } from "../../prisma/prisma.service"`), never `import type`.
+6. Every mutating endpoint: validation, auth, permission, rate limit and audit where docs/12 lists them (the helpers arrive on Day 3).
+
+Minimal controller, copied from health:
+
+```ts
+@Controller("health")
+export class HealthController {
+  constructor(private readonly health: HealthService) {}
+
+  @Public()
+  @Get()
+  @Header("Cache-Control", "no-store")
+  async get(@Res({ passthrough: true }) res: Response): Promise<HealthDto> {
+    const report = await this.health.check();
+    if (report.status !== "ok") res.status(503);
+    return report;
+  }
+}
+```
+
+## Tests
+
+- Vitest with SWC (decorators and metadata). `pnpm --filter api test`.
+- `test/setup-env.ts` runs first and loads `testEnv()`. `TEST_DATABASE_URL` and `TEST_REDIS_URL`, when set, replace the fake database and Redis URLs.
+- HTTP tests: build the module with `Test.createTestingModule({ imports: [AppModule] })`, override `PrismaService` and `RedisService` with small fakes when the test is not about them, call `configureHttpApp(app)`, then `supertest`.
+- Integration tests that need real services use `describe.skipIf(!process.env.TEST_DATABASE_URL)`.
+
+## Errors and logs
+
+- Response shape: `{ error: { code, message, details?, requestId } }`. The web shows `t("errors." + code)`, never `message`.
+- Every response carries `x-request-id`. Quote it when reporting a bug.
+- Never log OTPs, tokens, cookies, signatures or full phone numbers. Add new sensitive field names to `REDACT_PATHS` in `src/common/logger.ts`.

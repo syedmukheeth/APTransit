@@ -10,6 +10,7 @@ A task is done only when every box is ticked.
 - [ ] No secrets, no stray `console.log`, no commented out code.
 - [ ] PR reviewed by the other dev and merged to `main`.
 - [ ] Commit titles follow `AGENTS.md`. No AI attribution.
+- [ ] `progress/handoff.md` and the touched package READMEs still describe the code truthfully.
 
 ## Frontend (Dev A)
 

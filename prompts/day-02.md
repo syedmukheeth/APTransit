@@ -2,7 +2,15 @@
 
 **Phase:** Foundation · **Goal:** every core UI primitive exists with all states, and the full database schema is migrated and seeded with real AP network data.
 
-**Read first (both):** `docs/05-data-model.md`, `docs/09-design-system.md`, `docs/19-seed-data.md`
+**Read first (both):** `progress/handoff.md`, `docs/05-data-model.md`, `docs/09-design-system.md`, `docs/19-seed-data.md`
+
+## State after Day 1 (read before pasting your prompt)
+
+- Day 1 lives on `b/skeleton` and `a/web-scaffold`. Merge PR 1 then PR 2 (see `progress/handoff.md`, Git) and branch today from the updated `main`.
+- Accounts and `.env` files must exist (docs/15). Without them the API boots but health reports db and redis down.
+- **Dev B first thing:** `pnpm db:migrate` on your Neon branch (applies `20260923000000_init`), then confirm `/api/v1/health` shows `db: "ok"` and `redis: "ok"`. Your `schema_v1` migration goes on top of `init`. Replace the `db:seed` and `db:reset` placeholder scripts in `apps/api/package.json` and add `migrations.seed` to `apps/api/prisma.config.ts`. New env vars go into `env.ts`, `.env.example` and `test/test-env.ts`.
+- **Dev A first thing:** `packages/ui` has only `tokens.css` and `cn()`. It has no React dependencies and no test setup yet: add them as described in `progress/handoff.md` (Day 2 notes, decision D-010). Class names are listed in `packages/ui/README.md`; shadcn colour classes such as `bg-background` do not exist here. Register any new class family in `packages/ui/src/cn.ts`.
+- Patterns to copy and known gotchas: `progress/handoff.md`. Package guides: `apps/api/README.md`, `packages/shared/README.md`, `packages/ui/README.md`.
 
 ---
 

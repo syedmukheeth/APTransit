@@ -1,0 +1,45 @@
+# packages/shared (`@aptransit/shared`)
+
+The contract between web and API: zod schemas, enums, error codes, the status map and small pure helpers. Both devs own it; every change needs the other dev's review (AGENTS.md). Current state: `progress/handoff.md`.
+
+## How it is built
+
+- Compiled with `tsc` to CommonJS plus type declarations in `dist/` (decision D-005). Nest runs as CommonJS, Next bundles anything, so this works for both.
+- Turbo builds it before `dev`, `build`, `lint`, `typecheck` and `test` of every other package. During `pnpm dev` it rebuilds on save.
+- Stale types in your editor after a change: `pnpm --filter @aptransit/shared build`.
+
+## Rules
+
+- Only `zod` as a runtime dependency. No React, no Nest, no Node only APIs (the browser imports this too). Time zones through `Intl`.
+- Everything is exported from `src/index.ts`.
+- Every helper has tests next to it (`*.test.ts`, Vitest).
+- No em dash or en dash, as everywhere.
+
+## What is inside
+
+| File | Exports |
+| --- | --- |
+| `src/enums.ts` | every enum from docs/05 as a zod enum plus its type: `Role`, `ServiceType`, `TicketStatus`, `ScanReason`, ... Use `TicketStatus.enum.ACTIVE` or the string literal |
+| `src/errors.ts` | `ErrorCode` (const object), `ERROR_HTTP_STATUS`, `ErrorCodeSchema`, `ErrorResponse` (docs/06 error body), `isErrorCode()` |
+| `src/status.ts` | `StatusTone`, `DisplayStatus`, `STATUS_MAP` (tone, lucide icon, i18n key), `deriveTripDisplayStatus()`, `busDisplayStatus()`, `TICKET_STATUS_MAP`, `ColourOfDay`, `colourOfDay(date)` (IST weekday) |
+| `src/money.ts` | `Paise` schema, `isPaise`, `rupeesToPaise`, `paiseToRupees`, `roundToRupee` |
+| `src/schemas/health.ts` | `HealthDto`, `ProbeState` |
+
+Planned next (see the day prompts): `codes.ts`, `polyline.ts`, `time.ts`, `permissions.ts` (Day 2), `schemas/auth.ts` and `messages/` (Day 3), `fare.ts` and network schemas (Day 4), `format.ts` (Day 5), `qr.ts` (Day 7).
+
+## Adding a schema
+
+```ts
+// src/schemas/booking.ts
+import { z } from "zod";
+
+export const CreateBookingInput = z.object({
+  tripId: z.string().min(1),
+  passengers: z.array(z.object({ name: z.string().min(1), seatNo: z.string() })).min(1).max(6),
+});
+export type CreateBookingInput = z.infer<typeof CreateBookingInput>;
+```
+
+Then `export * from "./schemas/booking";` in `src/index.ts`. The API validates with it, the web types its forms with it, so a change breaks both builds at once (that is the point).
+
+Naming: `<Thing>Input` for request bodies, `<Thing>Dto` for responses, `<Thing>Query` for query strings.

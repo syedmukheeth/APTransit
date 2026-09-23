@@ -40,7 +40,7 @@ flowchart LR
 
 | Service | Type | Build | Start | Env |
 | --- | --- | --- | --- | --- |
-| aptransit-api | Web service, Node 22 | `corepack enable && pnpm install --frozen-lockfile && pnpm turbo build --filter=api && pnpm --filter api prisma migrate deploy` | `node apps/api/dist/main.js` | all API vars, `APP_ENV=staging`, `WORKER=0`, `OTP_DEV_ECHO=0`, `WEB_ORIGIN=<vercel url>` |
+| aptransit-api | Web service, Node 22 | `corepack enable && pnpm install --frozen-lockfile && pnpm turbo build --filter=api && pnpm --filter api db:deploy` (decision D-009) | `node apps/api/dist/main.js` | all API vars, `APP_ENV=staging`, `WORKER=0`, `OTP_DEV_ECHO=0`, `WEB_ORIGIN=<vercel url>` |
 | aptransit-worker | Background worker | same build without migrate | `node apps/api/dist/worker.js` | all API vars, `APP_ENV=staging`, `WORKER=1` |
 
 - Health check path: `/api/v1/health`.

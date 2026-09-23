@@ -1,0 +1,98 @@
+# packages/ui (`@aptransit/ui`)
+
+Design tokens and React components for AP TransitOS. Owner: Dev A. Rules: `docs/09-design-system.md`. Source only: Next.js compiles it (`transpilePackages` in `apps/web/next.config.ts`), so there is no build step.
+
+## Exports
+
+| Import | What |
+| --- | --- |
+| `@aptransit/ui/tokens.css` | every design token plus the Tailwind theme. Imported once in `apps/web/app/globals.css`, right after Tailwind |
+| `@aptransit/ui` | `cn()` today, all components from Day 2 |
+
+## The one rule
+
+**Raw colour values live only in `src/tokens.css`.** Components and pages use the classes below. Tailwind's default palette, font sizes, radii, shadows and easings are removed on purpose, so `bg-white`, `text-gray-500`, `text-lg`, `rounded-2xl` and `shadow-xl` do not exist and silently do nothing.
+
+## Classes you can use
+
+### Colour
+
+| Class | Token | Use |
+| --- | --- | --- |
+| `bg-bg` | `--bg` | page background |
+| `bg-surface` | `--surface` | grey areas, table header, subtle fills |
+| `bg-surface-raised` | `--surface-raised` | cards, sheets, popovers |
+| `border-default` | `--border` | dividers, card borders (decorative) |
+| `border-strong` | `--border-strong` | input, checkbox and control borders (3:1 contrast) |
+| `text-fg` | `--text` | main text |
+| `text-muted` | `--text-muted` | secondary text, labels |
+| `text-subtle` | `--text-subtle` | hints, timestamps (never key info) |
+| `bg-primary`, `text-primary`, `hover:bg-primary-hover` | `--primary`, `--primary-hover` | primary buttons, links, current step |
+| `bg-primary-soft` | `--primary-soft` | selected rows, chips |
+| `text-on-primary` | `--on-primary` | text on primary |
+| `text-status-<tone>` | tone text colour | status text and icons |
+| `bg-status-<tone>-soft` | tone soft background | badges |
+| `bg-status-<tone>-solid` + `text-on-solid` | solid tone + white | scanner result, map markers |
+| `bg-day-mon` to `bg-day-sun` | colour of the day | ticket band only |
+| `bg-transparent`, `bg-current`, `bg-inherit` | built in | still available |
+
+Tones: `success`, `info`, `warning`, `danger`, `maintenance`, `neutral`. Map a status to a tone only through `STATUS_MAP` and `TICKET_STATUS_MAP` in `@aptransit/shared`, never by hand.
+
+Every colour works in light and dark automatically (tokens switch on `data-theme` on `<html>` or the OS setting). Do not use `dark:` variants for colours.
+
+### Type
+
+| Class | Size / line height / weight | Use |
+| --- | --- | --- |
+| `text-display` | 36 / 44 / 600 | scanner result, KPI numbers |
+| `text-h1` | 28 / 36 / 600 | page title, one per page |
+| `text-h2` | 22 / 30 / 600 | section title |
+| `text-h3` | 18 / 26 / 600 | card title |
+| `text-body-lg` | 17 / 26 | driver and conductor body |
+| `text-body` | 16 / 24 | default (inputs never smaller) |
+| `text-small` | 14 / 20 | secondary info |
+| `text-caption` | 12 / 16 / 500 | meta, timestamps |
+
+Also: `font-sans` (Inter, then Noto Sans Telugu), `font-mono`, `tabular-nums` for times, money and counts. Elements with `lang="te"` get 15 percent taller line heights automatically.
+
+### Space, shape, depth, motion
+
+| Class | Value |
+| --- | --- |
+| `p-*`, `gap-*`, `w-*` and friends | 4 px grid (`p-4` is 16 px). Stay on the docs/09 scale: 1, 2, 3, 4, 5, 6, 8, 10, 12, 16 |
+| `px-gutter` | page gutter: 16 px mobile, 24 px tablet, 32 px desktop |
+| `rounded-sm`, `rounded-md`, `rounded-lg`, `rounded-xl`, `rounded-full` | 6, 10, 14, 20 px, pill |
+| `shadow-sm`, `shadow-md`, `shadow-lg` | sticky bars, popovers and sheets, dialogs. Cards use a border, not a shadow |
+| `z-sticky`, `z-header`, `z-overlay`, `z-sheet`, `z-dialog`, `z-toast` | 10, 20, 40, 50, 60, 70 |
+| `duration-fast`, `duration-base`, `duration-slow` | 120, 200, 320 ms |
+| `ease-out`, `ease-in` | docs/09 curves |
+
+Breakpoints are Tailwind's defaults (`sm` 640, `md` 768, `lg` 1024, `xl` 1280), which match docs/09.
+
+### Built into the base layer
+
+- Visible focus ring on every focusable element (2 px primary, 2 px offset). Never remove it.
+- `prefers-reduced-motion`: animations stop, transitions become opacity only.
+- Long words wrap (`overflow-wrap: break-word` on body). In flex and grid rows, give text cells `min-w-0` too.
+
+## `cn()`
+
+```ts
+import { cn } from "@aptransit/ui";
+
+<button className={cn("h-11 rounded-md px-4 text-body", isPrimary && "bg-primary text-on-primary", className)} />
+```
+
+`cn` is `clsx` plus `tailwind-merge` taught our token names. If you add a new class family (a new text size, layer, duration or spacing name), register it in `src/cn.ts`, otherwise two unrelated classes can cancel each other.
+
+## Adding a token
+
+1. Add the raw value in `src/tokens.css` (in `:root`, and in **both** dark blocks if it changes by theme).
+2. Map it: colours in `@theme inline` (`--color-<name>: var(--<token>)`), sizes in `@theme`, or add an `@utility`.
+3. Register new class families in `src/cn.ts`.
+4. Add it to the tables above and to the token check page (or `/design` from Day 3).
+5. Colour changes must keep WCAG AA (4.5:1 text, 3:1 control borders) in both themes. Check before merging.
+
+## Components (from Day 2)
+
+Put each component in `src/components/<name>.tsx`, export it from `src/index.ts`, and follow `docs/09` (variants, states, keyboard, dark mode). Text always comes in through props or `children`, never hardcoded. Tests live next to the component (test setup arrives with the first component, see `progress/handoff.md`, Day 2 notes).
