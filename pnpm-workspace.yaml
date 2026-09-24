@@ -13,6 +13,7 @@ overrides:
 allowBuilds:
   '@prisma/engines': true
   '@swc/core': true
+  esbuild: true
   prisma: true
   # eslint-config-next resolver: prebuilt binaries ship as optional deps, its postinstall is not needed
   unrs-resolver: false

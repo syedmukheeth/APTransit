@@ -1,0 +1,66 @@
+import * as React from "react";
+import { AlertTriangle, RotateCcw } from "lucide-react";
+import { cn } from "../cn";
+import { Button } from "./button";
+
+export interface ErrorStateProps extends React.HTMLAttributes<HTMLDivElement> {
+  title?: string;
+  message: string;
+  retryLabel: string;
+  onRetry?: () => void;
+  requestId?: string;
+}
+
+export const ErrorState = React.forwardRef<HTMLDivElement, ErrorStateProps>(
+  (
+    {
+      title,
+      message,
+      retryLabel,
+      onRetry,
+      requestId,
+      className,
+      ...props
+    },
+    ref
+  ) => {
+    return (
+      <div
+        ref={ref}
+        role="alert"
+        className={cn(
+          "flex flex-col items-center justify-center p-8 text-center",
+          className
+        )}
+        {...props}
+      >
+        <div className="flex h-14 w-14 items-center justify-center rounded-full bg-status-danger-soft text-status-danger mb-4">
+          <AlertTriangle className="h-7 w-7" aria-hidden="true" />
+        </div>
+        {title && <h3 className="text-h3 font-semibold text-fg">{title}</h3>}
+        <p className="mt-1.5 max-w-md text-body text-muted">{message}</p>
+
+        {requestId && (
+          <p className="mt-2 font-mono text-caption text-subtle">
+            Request ID: {requestId}
+          </p>
+        )}
+
+        {onRetry && (
+          <div className="mt-5">
+            <Button
+              variant="secondary"
+              size="md"
+              onClick={onRetry}
+              leftIcon={<RotateCcw className="h-4 w-4" />}
+            >
+              {retryLabel}
+            </Button>
+          </div>
+        )}
+      </div>
+    );
+  }
+);
+
+ErrorState.displayName = "ErrorState";

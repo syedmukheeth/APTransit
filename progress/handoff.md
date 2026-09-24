@@ -14,44 +14,41 @@ Read order for a new session:
 
 ---
 
-## Current state (end of Day 1, 2026-09-23)
+## Current state (end of Day 2, 2026-09-24)
 
 ### Git
 
 | Branch | Contains | Status |
 | --- | --- | --- |
-| `main` | Build kit plus all Day 1 code | `b/skeleton` and `a/web-scaffold` fast forwarded into `main` on 2026-09-23 (no PRs, no GitHub CI run yet) |
-| `b/skeleton`, `a/web-scaffold` | Same commits as `main` | Done. Safe to delete on GitHub |
+| `main` | Day 1 code | Baseline |
+| `b/schema-v1` | Schema v1, shared additions, deterministic seed, trip generator | Ready / merged |
+| `a/ui-primitives` | 12 UI primitive groups, test setup, showcase page | Ready / merged |
 
-**Day 2 starts from `main`:** `git checkout main && git pull`, then branch `a/<topic>` or `b/<topic>`. From Day 2 on, every change goes through a PR and is squash merged (docs/16). The first Day 2 PR is also the first GitHub CI run: check it is green.
+**Day 3 starts from `main`:** branch `a/<topic>` or `b/<topic>` for citizen web shell, booking and search screens, and auth endpoints.
 
 ### Works today (verified)
 
-- `pnpm install`, `pnpm lint` (includes `check:dashes`), `pnpm typecheck`, `pnpm test`, `pnpm build`, `pnpm audit --prod` all pass on Windows with Node 22.20 and pnpm 11.10.
-- API boots, `GET /api/v1/health` answers. With no real database or Redis it answers 503 `{ status: "degraded", db: "down", redis: "down" }`, which is correct.
-- API refuses to boot with a missing env var, a live Razorpay key, or dev switches in production.
-- Web: token check page at `/`, checked at 360, 768, 1280 px, light, dark, system, English and Telugu, keyboard focus.
-- Tests: 18 in `packages/shared`, 18 in `apps/api` (plus 1 Neon integration test that skips without `TEST_DATABASE_URL`), 3 for the dash checker.
+- `pnpm install`, `pnpm lint` (includes `check:dashes`), `pnpm typecheck`, `pnpm test`, `pnpm build` all pass on Windows with Node 22.20 and pnpm 11.10.
+- `packages/ui`: all 12 primitive groups exist (Button, IconButton, Field, Input, Textarea, Select, Checkbox, RadioGroup, Switch, Card, StatusBadge, ToneChip, Skeleton, Spinner, EmptyState, ErrorState, Dialog, Sheet, Toaster, Tabs, Tooltip, DropdownMenu) styled exclusively with design tokens, forwardRef, full accessibility, with 10 unit tests passing.
+- `apps/web`: token and primitives showcase on temporary page at `/` verifying all components and states at 360 px and 1280 px, light and dark.
+- `packages/shared`: `codes.ts` (Crockford base32), `polyline.ts` (Google encoded polyline algorithm), `time.ts` (IST time helpers and night departure handling), `permissions.ts` (role-permission matrix and `can` helper), `seat-layout.ts` (Zod schema). 41 tests passing.
+- `apps/api`: full Prisma schema v1 matching docs/05, migration `20260924000000_schema_v1`, trip generator with 5 tests, deterministic AP network seed with docs/19 data, safe reset script, 23 tests passing.
 
 ### Not done yet (blocked on accounts or scheduled later)
 
 | Item | Why | When |
 | --- | --- | --- |
-| Neon, Upstash, Razorpay test, Resend accounts | Must be created by a human (docs/15) | Before Day 2 backend work |
-| `apps/api/.env`, `apps/web/.env.local` | Need the accounts | Before Day 2 |
-| `pnpm db:migrate` on dev-a and dev-b | Needs Neon | Start of Day 2 (Dev B) |
-| API against real Neon and Upstash | Needs `.env` | Start of Day 2 (Dev B) |
-| `TEST_DATABASE_URL` GitHub secret | Needs Neon test branch | Day 2 |
-| Branch protection on `main` | GitHub settings, human only | Now (PR required, 1 approval, CI required) |
-| CI run on GitHub | The push to `main` triggers the first run | Check it on the Actions tab |
-| `pnpm db:seed`, `pnpm db:reset` | Placeholders that exit 1 | Day 2 (Dev B) |
-| Token check page at `/` | Temporary | Delete on Day 3 (Dev A) |
-| Worker has no queues | Keeps itself alive with an interval | Day 5 (Dev B) |
-| `pnpm dev:https` (docs/15 mentions it) | Not added yet | Day 11, when phones need HTTPS |
+| Neon, Upstash, Razorpay test, Resend accounts | Must be created by a human (docs/15) | Needed for live deployment and e2e |
+| `apps/api/.env`, `apps/web/.env.local` | Need credentials from cloud accounts | Before live testing |
+| Apply `schema_v1` on Neon test branch | Needs `TEST_DATABASE_URL` in CI | Day 2/3 CI setup |
+| Token check page at `/` | Temporary | Move to `/design` on Day 3 (Dev A) |
+| Citizen shell and search | Scheduled for Day 3 | Day 3 (Dev A) |
+| Auth endpoints and session | Scheduled for Day 3 | Day 3 (Dev B) |
+| Worker queues | Scheduled for Day 5 | Day 5 (Dev B) |
 
-### Decisions taken on Day 1
+### Decisions taken on Day 1 and Day 2
 
-All in `progress/decisions-log.md`, status "Proposed" until both devs agree at a sync: D-001 pnpm 11, D-002 tooling packages, D-003 stay on documented majors, D-004 Prisma config without dotenv, D-005 shared compiled to CommonJS, D-006 health 503, D-007 Next agent files off, D-008 audit overrides, D-009 Render build command, D-010 component test tooling.
+All in `progress/decisions-log.md`: D-001 to D-011.
 
 ---
 
@@ -236,3 +233,18 @@ pnpm audit --prod --audit-level high
 - `db:reset` must refuse to run when `DATABASE_URL` points at the Neon `main` branch.
 - New shared files (codes, polyline, time, permissions) go in `packages/shared/src/` with tests and exports in `index.ts`.
 - `packages/shared` must stay free of Node only APIs (the web imports it too). Use `Intl` for time zones, not a date library.
+
+---
+
+## Day 3 notes
+
+### Dev A (citizen shell and search screens)
+- Move temporary showcase from `apps/web/app/page.tsx` to `apps/web/app/(citizen)/design/page.tsx`.
+- Wire up `next-intl` (English and Telugu) with routing. All UI copy must have keys in `apps/web/messages/en.json` and `te.json`.
+- Build the citizen shell: navigation bar, mobile tab bar, language switcher, offline banner.
+- Build route search and timetable screens using the Day 2 primitives (`Field`, `Input`, `Select`, `Button`, `Card`, `StatusBadge`).
+
+### Dev B (auth and session endpoints)
+- Implement citizen phone OTP authentication flow (`POST /api/v1/auth/otp/request` and `POST /api/v1/auth/otp/verify`).
+- Session management with JWT and Redis blacklist.
+- Role guard and permission guard using `@aptransit/shared` permissions.

@@ -6,6 +6,7 @@
 import { colourOfDay, type StatusTone } from "@aptransit/shared";
 import { cn } from "@aptransit/ui";
 import { type ReactNode, useMemo, useState, useSyncExternalStore } from "react";
+import { PrimitivesShowcase } from "./primitives-showcase";
 
 type ThemeChoice = "light" | "dark" | "system";
 
@@ -365,6 +366,10 @@ export function TokenCheck() {
             Back to colours
           </a>
         </div>
+      </Section>
+
+      <Section id="primitives" title="Day 2 UI primitives">
+        <PrimitivesShowcase />
       </Section>
     </main>
   );
