@@ -104,6 +104,14 @@ The only way to change a locked doc in `docs/`. Add an entry, agree at the daily
 - **Decision:** allowed as dev dependencies of `packages/ui` (and later `apps/web`): `@testing-library/react`, `@testing-library/user-event`, `@testing-library/jest-dom`, `jsdom`. Vitest runs with `environment: "jsdom"` there.
 - **Status:** Proposed, review at the Day 2 sync
 
+### D-011 · Allow esbuild build script in pnpm-workspace.yaml
+- **Date:** 2026-09-24
+- **Raised by:** Dev A
+- **Doc affected:** docs/04-tech-stack.md (Runtime and tooling)
+- **Problem:** pnpm 11 ignores build scripts by default, causing ERR_PNPM_IGNORED_BUILDS when installing esbuild (required by vitest).
+- **Decision:** add esbuild: true to allowBuilds in pnpm-workspace.yaml.
+- **Status:** Proposed, review at the Day 2 sync
+
 ## Parked (ideas outside the 20 day scope)
 
 | Idea | Raised by | Plan sec |

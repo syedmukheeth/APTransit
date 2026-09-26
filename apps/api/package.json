@@ -15,8 +15,8 @@
     "db:migrate": "prisma migrate dev",
     "db:deploy": "prisma migrate deploy",
     "db:studio": "prisma studio",
-    "db:seed": "node -e \"console.error('The seed is built on Day 2, see prompts/day-02.md');process.exit(1)\"",
-    "db:reset": "node -e \"console.error('db:reset is built on Day 2, see prompts/day-02.md');process.exit(1)\""
+    "db:seed": "tsx prisma/seed.ts",
+    "db:reset": "tsx prisma/reset.ts"
   },
   "dependencies": {
     "@aptransit/shared": "workspace:*",
@@ -46,6 +46,7 @@
     "eslint": "9.39.5",
     "prisma": "7.10.0",
     "supertest": "7.3.0",
+    "tsx": "^4.23.15",
     "typescript": "5.9.3",
     "unplugin-swc": "2.0.0",
     "vitest": "4.1.11"

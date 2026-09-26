@@ -6,7 +6,8 @@
     "moduleResolution": "bundler",
     "jsx": "react-jsx",
     "isolatedModules": true,
-    "noEmit": true
+    "noEmit": true,
+    "types": ["@testing-library/jest-dom/vitest"]
   },
-  "include": ["src"]
+  "include": ["src", "test-setup.ts", "vitest.config.mts"]
 }

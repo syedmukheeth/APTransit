@@ -1,0 +1,357 @@
+export interface DistrictSeed {
+  code: string;
+  nameEn: string;
+  nameTe: string;
+}
+
+export const DISTRICTS: DistrictSeed[] = [
+  { code: "KNL", nameEn: "Kurnool", nameTe: "కర్నూలు" },
+  { code: "NDL", nameEn: "Nandyal", nameTe: "నంద్యాల" },
+  { code: "ATP", nameEn: "Anantapuramu", nameTe: "అనంతపురం" },
+  { code: "KDP", nameEn: "YSR Kadapa", nameTe: "వైఎస్ఆర్ కడప" },
+  { code: "TPT", nameEn: "Tirupati", nameTe: "తిరుపతి" },
+  { code: "PKM", nameEn: "Prakasam", nameTe: "ప్రకాశం" },
+  { code: "PLN", nameEn: "Palnadu", nameTe: "పల్నాడు" },
+  { code: "GNT", nameEn: "Guntur", nameTe: "గుంటూరు" },
+  { code: "NTR", nameEn: "NTR", nameTe: "ఎన్టీఆర్" },
+  { code: "VSP", nameEn: "Visakhapatnam", nameTe: "విశాఖపట్నం" },
+];
+
+export interface StopSeed {
+  code: string;
+  nameEn: string;
+  nameTe: string;
+  districtCode: string;
+  lat: number;
+  lng: number;
+  isBusStand: boolean;
+}
+
+export const STOPS: StopSeed[] = [
+  { code: "KNL", nameEn: "Kurnool Bus Stand", nameTe: "కర్నూలు బస్ స్టాండ్", districtCode: "KNL", lat: 15.8281, lng: 78.0373, isBusStand: true },
+  { code: "ORV", nameEn: "Orvakal", nameTe: "ఓర్వకల్లు", districtCode: "KNL", lat: 15.67, lng: 78.11, isBusStand: false },
+  { code: "DHN", nameEn: "Dhone", nameTe: "డోన్", districtCode: "NDL", lat: 15.396, lng: 77.872, isBusStand: true },
+  { code: "PNY", nameEn: "Panyam", nameTe: "పాణ్యం", districtCode: "NDL", lat: 15.526, lng: 78.339, isBusStand: false },
+  { code: "NDL", nameEn: "Nandyal Bus Stand", nameTe: "నంద్యాల బస్ స్టాండ్", districtCode: "NDL", lat: 15.4786, lng: 78.4836, isBusStand: true },
+  { code: "AGD", nameEn: "Allagadda", nameTe: "ఆళ్లగడ్డ", districtCode: "NDL", lat: 15.131, lng: 78.513, isBusStand: false },
+  { code: "GDL", nameEn: "Giddalur", nameTe: "గిద్దలూరు", districtCode: "PKM", lat: 15.3789, lng: 78.9265, isBusStand: false },
+  { code: "MKP", nameEn: "Markapur", nameTe: "మార్కాపురం", districtCode: "PKM", lat: 15.7353, lng: 79.2698, isBusStand: true },
+  { code: "VKD", nameEn: "Vinukonda", nameTe: "వినుకొండ", districtCode: "PLN", lat: 16.0529, lng: 79.7394, isBusStand: false },
+  { code: "NRT", nameEn: "Narasaraopet", nameTe: "నరసరావుపేట", districtCode: "PLN", lat: 16.235, lng: 80.048, isBusStand: true },
+  { code: "GNT", nameEn: "Guntur Bus Stand", nameTe: "గుంటూరు బస్ స్టాండ్", districtCode: "GNT", lat: 16.3067, lng: 80.4365, isBusStand: true },
+  { code: "MGL", nameEn: "Mangalagiri", nameTe: "మంగళగిరి", districtCode: "GNT", lat: 16.43, lng: 80.568, isBusStand: false },
+  { code: "VJA", nameEn: "Vijayawada PNBS", nameTe: "విజయవాడ పీఎన్‌బీఎస్", districtCode: "NTR", lat: 16.5097, lng: 80.6197, isBusStand: true },
+  { code: "GTY", nameEn: "Gooty", nameTe: "గుత్తి", districtCode: "ATP", lat: 15.121, lng: 77.634, isBusStand: false },
+  { code: "ATP", nameEn: "Anantapur Bus Stand", nameTe: "అనంతపురం బస్ స్టాండ్", districtCode: "ATP", lat: 14.6819, lng: 77.6006, isBusStand: true },
+  { code: "MDK", nameEn: "Mydukur", nameTe: "మైదుకూరు", districtCode: "KDP", lat: 14.728, lng: 78.74, isBusStand: false },
+  { code: "KDP", nameEn: "Kadapa Bus Stand", nameTe: "కడప బస్ స్టాండ్", districtCode: "KDP", lat: 14.4673, lng: 78.8242, isBusStand: true },
+  { code: "RJP", nameEn: "Rajampet", nameTe: "రాజంపేట", districtCode: "KDP", lat: 14.19, lng: 79.16, isBusStand: false },
+  { code: "RGT", nameEn: "Renigunta", nameTe: "రేణిగుంట", districtCode: "TPT", lat: 13.636, lng: 79.512, isBusStand: false },
+  { code: "TPT", nameEn: "Tirupati Bus Stand", nameTe: "తిరుపతి బస్ స్టాండ్", districtCode: "TPT", lat: 13.6288, lng: 79.4192, isBusStand: true },
+  { code: "DWK", nameEn: "Dwaraka Bus Station", nameTe: "ద్వారకా బస్ స్టేషన్", districtCode: "VSP", lat: 17.724, lng: 83.305, isBusStand: true },
+  { code: "MDP", nameEn: "Maddilapalem", nameTe: "మద్దిలపాలెం", districtCode: "VSP", lat: 17.738, lng: 83.32, isBusStand: false },
+  { code: "HNW", nameEn: "Hanumanthawaka", nameTe: "హనుమంతవాక", districtCode: "VSP", lat: 17.756, lng: 83.322, isBusStand: false },
+  { code: "SMC", nameEn: "Simhachalam", nameTe: "సింహాచలం", districtCode: "VSP", lat: 17.766, lng: 83.25, isBusStand: false },
+];
+
+export interface DepotSeed {
+  code: string;
+  nameEn: string;
+  nameTe: string;
+  districtCode: string;
+  busStandCode: string;
+  busCount: number;
+}
+
+export const DEPOTS: DepotSeed[] = [
+  { code: "D-KNL", nameEn: "Kurnool depot", nameTe: "కర్నూలు డిపో", districtCode: "KNL", busStandCode: "KNL", busCount: 24 },
+  { code: "D-NDL", nameEn: "Nandyal depot", nameTe: "నంద్యాల డిపో", districtCode: "NDL", busStandCode: "NDL", busCount: 8 },
+  { code: "D-ATP", nameEn: "Anantapur depot", nameTe: "అనంతపురం డిపో", districtCode: "ATP", busStandCode: "ATP", busCount: 6 },
+  { code: "D-TPT", nameEn: "Tirupati depot", nameTe: "తిరుపతి డిపో", districtCode: "TPT", busStandCode: "TPT", busCount: 6 },
+  { code: "D-VJA", nameEn: "Vijayawada depot", nameTe: "విజయవాడ డిపో", districtCode: "NTR", busStandCode: "VJA", busCount: 8 },
+  { code: "D-VSP", nameEn: "Visakhapatnam depot", nameTe: "విశాఖపట్నం డిపో", districtCode: "VSP", busStandCode: "DWK", busCount: 8 },
+];
+
+export interface RouteStopDef {
+  stopCode: string;
+  kmFromOrigin: number;
+  minutesFromOrigin: number;
+}
+
+export interface RouteSeedDef {
+  code: string;
+  reverseCode: string;
+  nameEn: string;
+  reverseNameEn: string;
+  nameTe: string;
+  reverseNameTe: string;
+  depotCode: string;
+  stops: RouteStopDef[];
+}
+
+export const ROUTE_DEFS: RouteSeedDef[] = [
+  {
+    code: "KNL-VJA-01",
+    reverseCode: "VJA-KNL-02",
+    nameEn: "Kurnool to Vijayawada",
+    reverseNameEn: "Vijayawada to Kurnool",
+    nameTe: "కర్నూలు నుండి విజయవాడ",
+    reverseNameTe: "విజయవాడ నుండి కర్నూలు",
+    depotCode: "D-KNL",
+    stops: [
+      { stopCode: "KNL", kmFromOrigin: 0, minutesFromOrigin: 0 },
+      { stopCode: "NDL", kmFromOrigin: 70, minutesFromOrigin: 75 },
+      { stopCode: "GDL", kmFromOrigin: 130, minutesFromOrigin: 145 },
+      { stopCode: "MKP", kmFromOrigin: 190, minutesFromOrigin: 205 },
+      { stopCode: "VKD", kmFromOrigin: 245, minutesFromOrigin: 260 },
+      { stopCode: "NRT", kmFromOrigin: 285, minutesFromOrigin: 290 },
+      { stopCode: "GNT", kmFromOrigin: 330, minutesFromOrigin: 320 },
+      { stopCode: "VJA", kmFromOrigin: 365, minutesFromOrigin: 340 },
+    ],
+  },
+  {
+    code: "KNL-TPT-01",
+    reverseCode: "TPT-KNL-02",
+    nameEn: "Kurnool to Tirupati",
+    reverseNameEn: "Tirupati to Kurnool",
+    nameTe: "కర్నూలు నుండి తిరుపతి",
+    reverseNameTe: "తిరుపతి నుండి కర్నూలు",
+    depotCode: "D-KNL",
+    stops: [
+      { stopCode: "KNL", kmFromOrigin: 0, minutesFromOrigin: 0 },
+      { stopCode: "NDL", kmFromOrigin: 70, minutesFromOrigin: 75 },
+      { stopCode: "AGD", kmFromOrigin: 115, minutesFromOrigin: 120 },
+      { stopCode: "MDK", kmFromOrigin: 160, minutesFromOrigin: 170 },
+      { stopCode: "KDP", kmFromOrigin: 200, minutesFromOrigin: 215 },
+      { stopCode: "RJP", kmFromOrigin: 255, minutesFromOrigin: 275 },
+      { stopCode: "RGT", kmFromOrigin: 320, minutesFromOrigin: 345 },
+      { stopCode: "TPT", kmFromOrigin: 330, minutesFromOrigin: 360 },
+    ],
+  },
+  {
+    code: "KNL-ATP-01",
+    reverseCode: "ATP-KNL-02",
+    nameEn: "Kurnool to Anantapur",
+    reverseNameEn: "Anantapur to Kurnool",
+    nameTe: "కర్నూలు నుండి అనంతపురం",
+    reverseNameTe: "అనంతపురం నుండి కర్నూలు",
+    depotCode: "D-KNL",
+    stops: [
+      { stopCode: "KNL", kmFromOrigin: 0, minutesFromOrigin: 0 },
+      { stopCode: "DHN", kmFromOrigin: 55, minutesFromOrigin: 65 },
+      { stopCode: "GTY", kmFromOrigin: 105, minutesFromOrigin: 120 },
+      { stopCode: "ATP", kmFromOrigin: 150, minutesFromOrigin: 180 },
+    ],
+  },
+  {
+    code: "KNL-NDL-01",
+    reverseCode: "NDL-KNL-02",
+    nameEn: "Kurnool to Nandyal",
+    reverseNameEn: "Nandyal to Kurnool",
+    nameTe: "కర్నూలు నుండి నంద్యాల",
+    reverseNameTe: "నంద్యాల నుండి కర్నూలు",
+    depotCode: "D-KNL",
+    stops: [
+      { stopCode: "KNL", kmFromOrigin: 0, minutesFromOrigin: 0 },
+      { stopCode: "ORV", kmFromOrigin: 20, minutesFromOrigin: 30 },
+      { stopCode: "PNY", kmFromOrigin: 45, minutesFromOrigin: 60 },
+      { stopCode: "NDL", kmFromOrigin: 70, minutesFromOrigin: 95 },
+    ],
+  },
+  {
+    code: "VJA-GNT-01",
+    reverseCode: "GNT-VJA-02",
+    nameEn: "Vijayawada to Guntur",
+    reverseNameEn: "Guntur to Vijayawada",
+    nameTe: "విజయవాడ నుండి గుంటూరు",
+    reverseNameTe: "గుంటూరు నుండి విజయవాడ",
+    depotCode: "D-VJA",
+    stops: [
+      { stopCode: "VJA", kmFromOrigin: 0, minutesFromOrigin: 0 },
+      { stopCode: "MGL", kmFromOrigin: 15, minutesFromOrigin: 30 },
+      { stopCode: "GNT", kmFromOrigin: 35, minutesFromOrigin: 60 },
+    ],
+  },
+  {
+    code: "VSP-SMC-01",
+    reverseCode: "SMC-VSP-02",
+    nameEn: "Dwaraka to Simhachalam",
+    reverseNameEn: "Simhachalam to Dwaraka",
+    nameTe: "ద్వారకా నుండి సింహాచలం",
+    reverseNameTe: "సింహాచలం నుండి ద్వారకా",
+    depotCode: "D-VSP",
+    stops: [
+      { stopCode: "DWK", kmFromOrigin: 0, minutesFromOrigin: 0 },
+      { stopCode: "MDP", kmFromOrigin: 3, minutesFromOrigin: 12 },
+      { stopCode: "HNW", kmFromOrigin: 6, minutesFromOrigin: 20 },
+      { stopCode: "SMC", kmFromOrigin: 15, minutesFromOrigin: 40 },
+    ],
+  },
+];
+
+export interface BusTypeSeed {
+  serviceType:
+    | "PALLEVELUGU"
+    | "ULTRA_PALLEVELUGU"
+    | "CITY_ORDINARY"
+    | "METRO_EXPRESS"
+    | "EXPRESS"
+    | "ULTRA_DELUXE"
+    | "SUPER_LUXURY"
+    | "INDRA_AC"
+    | "AMARAVATI_AC"
+    | "GARUDA_AC";
+  nameEn: string;
+  nameTe: string;
+  totalSeats: number;
+  isAc: boolean;
+  freeTravelEligible: boolean;
+  perKmPaise: number;
+  minFarePaise: number;
+  reservationFeePaise: number;
+  baseFarePaise: number;
+  layout: {
+    rows: number;
+    columns: number;
+    aisleIndex: number;
+    labels: string[];
+    blockedCells?: { row: number; col: number }[];
+  };
+}
+
+function makeSeatLabels(count: number): string[] {
+  return Array.from({ length: count }, (_, i) => `${i + 1}`);
+}
+
+export const BUS_TYPES: BusTypeSeed[] = [
+  {
+    serviceType: "PALLEVELUGU",
+    nameEn: "Pallevelugu",
+    nameTe: "పల్లెవెలుగు",
+    totalSeats: 60,
+    isAc: false,
+    freeTravelEligible: true,
+    perKmPaise: 110,
+    minFarePaise: 1000,
+    reservationFeePaise: 0,
+    baseFarePaise: 1000,
+    layout: { rows: 12, columns: 5, aisleIndex: 3, labels: makeSeatLabels(60) },
+  },
+  {
+    serviceType: "ULTRA_PALLEVELUGU",
+    nameEn: "Ultra Pallevelugu",
+    nameTe: "అల్ట్రా పల్లెవెలుగు",
+    totalSeats: 60,
+    isAc: false,
+    freeTravelEligible: true,
+    perKmPaise: 120,
+    minFarePaise: 1000,
+    reservationFeePaise: 0,
+    baseFarePaise: 1000,
+    layout: { rows: 12, columns: 5, aisleIndex: 3, labels: makeSeatLabels(60) },
+  },
+  {
+    serviceType: "CITY_ORDINARY",
+    nameEn: "City Ordinary",
+    nameTe: "సిటీ ఆర్డినరీ",
+    totalSeats: 50,
+    isAc: false,
+    freeTravelEligible: true,
+    perKmPaise: 100,
+    minFarePaise: 1000,
+    reservationFeePaise: 0,
+    baseFarePaise: 1000,
+    layout: { rows: 10, columns: 5, aisleIndex: 3, labels: makeSeatLabels(50) },
+  },
+  {
+    serviceType: "METRO_EXPRESS",
+    nameEn: "Metro Express",
+    nameTe: "మెట్రో ఎక్స్‌ప్రెస్",
+    totalSeats: 40,
+    isAc: false,
+    freeTravelEligible: true,
+    perKmPaise: 130,
+    minFarePaise: 1500,
+    reservationFeePaise: 0,
+    baseFarePaise: 1500,
+    layout: { rows: 10, columns: 4, aisleIndex: 2, labels: makeSeatLabels(40) },
+  },
+  {
+    serviceType: "EXPRESS",
+    nameEn: "Express",
+    nameTe: "ఎక్స్‌ప్రెస్",
+    totalSeats: 44,
+    isAc: false,
+    freeTravelEligible: true,
+    perKmPaise: 140,
+    minFarePaise: 2000,
+    reservationFeePaise: 3000,
+    baseFarePaise: 2000,
+    layout: { rows: 11, columns: 4, aisleIndex: 2, labels: makeSeatLabels(44) },
+  },
+  {
+    serviceType: "ULTRA_DELUXE",
+    nameEn: "Ultra Deluxe",
+    nameTe: "అల్ట్రా డీలక్స్",
+    totalSeats: 40,
+    isAc: false,
+    freeTravelEligible: false,
+    perKmPaise: 160,
+    minFarePaise: 3000,
+    reservationFeePaise: 3000,
+    baseFarePaise: 3000,
+    layout: { rows: 10, columns: 4, aisleIndex: 2, labels: makeSeatLabels(40) },
+  },
+  {
+    serviceType: "SUPER_LUXURY",
+    nameEn: "Super Luxury",
+    nameTe: "సూపర్ లగ్జరీ",
+    totalSeats: 40,
+    isAc: false,
+    freeTravelEligible: false,
+    perKmPaise: 180,
+    minFarePaise: 4000,
+    reservationFeePaise: 3000,
+    baseFarePaise: 4000,
+    layout: { rows: 10, columns: 4, aisleIndex: 2, labels: makeSeatLabels(40) },
+  },
+  {
+    serviceType: "INDRA_AC",
+    nameEn: "Indra AC",
+    nameTe: "ఇంద్ర ఏసీ",
+    totalSeats: 40,
+    isAc: true,
+    freeTravelEligible: false,
+    perKmPaise: 210,
+    minFarePaise: 5000,
+    reservationFeePaise: 3000,
+    baseFarePaise: 5000,
+    layout: { rows: 10, columns: 4, aisleIndex: 2, labels: makeSeatLabels(40) },
+  },
+  {
+    serviceType: "AMARAVATI_AC",
+    nameEn: "Amaravati AC",
+    nameTe: "అమరావతి ఏసీ",
+    totalSeats: 44,
+    isAc: true,
+    freeTravelEligible: false,
+    perKmPaise: 250,
+    minFarePaise: 6000,
+    reservationFeePaise: 3000,
+    baseFarePaise: 6000,
+    layout: { rows: 11, columns: 4, aisleIndex: 2, labels: makeSeatLabels(44) },
+  },
+  {
+    serviceType: "GARUDA_AC",
+    nameEn: "Garuda AC",
+    nameTe: "గరుడ ఏసీ",
+    totalSeats: 44,
+    isAc: true,
+    freeTravelEligible: false,
+    perKmPaise: 270,
+    minFarePaise: 6000,
+    reservationFeePaise: 3000,
+    baseFarePaise: 6000,
+    layout: { rows: 11, columns: 4, aisleIndex: 2, labels: makeSeatLabels(44) },
+  },
+];

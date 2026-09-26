@@ -1,5 +1,5 @@
 // AP TransitOS database schema. Source of truth: docs/05-data-model.md.
-// Day 1 holds only the settings table. The full schema v1 lands on Day 2.
+// Full schema v1 for Day 2.
 
 generator client {
   provider     = "prisma-client"
@@ -11,6 +11,882 @@ datasource db {
   provider = "postgresql"
 }
 
+enum Role {
+  CITIZEN
+  DRIVER
+  CONDUCTOR
+  DEPOT_STAFF
+  DEPOT_MANAGER
+  DISTRICT_OFFICER
+  TRANSPORT_OFFICER
+  STATE_ADMIN
+  SUPER_ADMIN
+}
+
+enum ServiceType {
+  PALLEVELUGU
+  ULTRA_PALLEVELUGU
+  CITY_ORDINARY
+  METRO_EXPRESS
+  EXPRESS
+  ULTRA_DELUXE
+  SUPER_LUXURY
+  INDRA_AC
+  AMARAVATI_AC
+  GARUDA_AC
+}
+
+enum BusStatus {
+  IDLE
+  RUNNING
+  DELAYED
+  BREAKDOWN
+  MAINTENANCE
+}
+
+enum TripStatus {
+  SCHEDULED
+  RUNNING
+  COMPLETED
+  CANCELLED
+}
+
+enum BookingStatus {
+  PENDING_PAYMENT
+  CONFIRMED
+  EXPIRED
+  CANCELLED
+}
+
+enum TicketType {
+  SINGLE
+  FREE_TRAVEL
+}
+
+enum TicketStatus {
+  BOOKED
+  ACTIVE
+  SCANNED
+  USED
+  CANCELLED
+  REFUNDED
+  EXPIRED
+}
+
+enum PaymentStatus {
+  CREATED
+  CAPTURED
+  FAILED
+  REFUNDED
+  PARTIALLY_REFUNDED
+}
+
+enum RefundStatus {
+  PENDING
+  PROCESSED
+  FAILED
+}
+
+enum PassKind {
+  WEEKLY
+  MONTHLY
+  FREE_TRAVEL
+}
+
+enum PassStatus {
+  PENDING_PAYMENT
+  READY
+  ACTIVE
+  EXPIRED
+  CANCELLED
+}
+
+enum ScanResult {
+  VALID
+  INVALID
+}
+
+enum ScanReason {
+  OK
+  NOT_FOUND
+  BAD_SIGNATURE
+  STALE_CODE
+  NOT_ACTIVATED
+  ALREADY_SCANNED
+  EXPIRED
+  CANCELLED
+  WRONG_TRIP
+  WRONG_DATE
+  SERVICE_NOT_ELIGIBLE
+}
+
+enum IncidentType {
+  BREAKDOWN
+  ACCIDENT
+  TRAFFIC
+  ROAD_BLOCK
+  BUS_PROBLEM
+  MEDICAL
+  DELAY
+  OTHER
+}
+
+enum IncidentStatus {
+  OPEN
+  ACKNOWLEDGED
+  RESOLVED
+}
+
+enum Severity {
+  LOW
+  MEDIUM
+  HIGH
+  CRITICAL
+}
+
+enum FeedbackCategory {
+  DELAY
+  CLEANLINESS
+  STAFF
+  TICKET
+  SAFETY
+  OVERCROWDING
+  OTHER
+}
+
+enum ComplaintStatus {
+  RECEIVED
+  IN_REVIEW
+  RESOLVED
+  CLOSED
+}
+
+enum NotificationType {
+  BOOKING_CONFIRMED
+  TICKET_ACTIVATED
+  TICKET_RECEIVED
+  TRIP_DEPARTED
+  TRIP_DELAYED
+  BUS_NEAR_STOP
+  TRIP_CANCELLED
+  REPLACEMENT_BUS
+  ROUTE_UPDATE
+  PASS_EXPIRING
+  COMPLAINT_UPDATE
+}
+
+enum EligibilityScheme {
+  STREE_SHAKTI
+}
+
+enum EligibilityResult {
+  ELIGIBLE
+  NOT_ELIGIBLE
+}
+
+enum OtpChannel {
+  EMAIL
+  PHONE
+}
+
+enum AssignmentReason {
+  INITIAL
+  REPLACEMENT
+}
+
+enum Gender {
+  F
+  M
+  X
+}
+
+enum PaymentProvider {
+  RAZORPAY
+}
+
+model User {
+  id              String         @id @default(cuid(2))
+  phone           String?        @unique
+  email           String?        @unique
+  name            String?
+  preferredLocale String         @default("en")
+  createdAt       DateTime       @default(now())
+  updatedAt       DateTime       @updatedAt
+  deletedAt       DateTime?
+
+  userRoles           UserRole[]
+  refreshTokens       RefreshToken[]
+  devices             Device[]
+  driver              Driver?
+  conductor           Conductor?
+  bookings            Booking[]
+  heldTickets         Ticket[]           @relation("HeldTickets")
+  originalTickets     Ticket[]           @relation("OriginalTickets")
+  transfersFrom       TicketTransfer[]   @relation("TransfersFrom")
+  transfersTo         TicketTransfer[]   @relation("TransfersTo")
+  passes              Pass[]
+  eligibilityChecks   EligibilityCheck[]
+  notifications       Notification[]
+  complaints          Complaint[]
+  auditLogs           AuditLog[]
+
+  @@map("users")
+}
+
+model UserRole {
+  id         String    @id @default(cuid(2))
+  userId     String
+  role       Role
+  depotId    String?
+  districtId String?
+  createdAt  DateTime  @default(now())
+
+  user     User      @relation(fields: [userId], references: [id], onDelete: Cascade)
+  depot    Depot?    @relation(fields: [depotId], references: [id])
+  district District? @relation(fields: [districtId], references: [id])
+
+  @@unique([userId, role, depotId, districtId])
+  @@map("user_roles")
+}
+
+model OtpCode {
+  id         String     @id @default(cuid(2))
+  channel    OtpChannel
+  target     String
+  codeHash   String
+  purpose    String     @default("LOGIN")
+  attempts   Int        @default(0)
+  expiresAt  DateTime
+  consumedAt DateTime?
+  createdAt  DateTime   @default(now())
+
+  @@map("otp_codes")
+}
+
+model RefreshToken {
+  id           String    @id @default(cuid(2))
+  userId       String
+  tokenHash    String    @unique
+  familyId     String
+  expiresAt    DateTime
+  revokedAt    DateTime?
+  replacedById String?
+  userAgent    String?
+  createdAt    DateTime  @default(now())
+
+  user User @relation(fields: [userId], references: [id], onDelete: Cascade)
+
+  @@map("refresh_tokens")
+}
+
+model Device {
+  id            String    @id @default(cuid(2))
+  userId        String
+  label         String
+  deviceKeyHash String    @unique
+  approvedAt    DateTime?
+  approvedById  String?
+  revokedAt     DateTime?
+  createdAt     DateTime  @default(now())
+
+  user User @relation(fields: [userId], references: [id], onDelete: Cascade)
+
+  @@map("devices")
+}
+
+model District {
+  id        String   @id @default(cuid(2))
+  code      String   @unique
+  nameEn    String
+  nameTe    String
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+
+  busStands BusStand[]
+  depots    Depot[]
+  stops     Stop[]
+  userRoles UserRole[]
+
+  @@map("districts")
+}
+
+model BusStand {
+  id         String   @id @default(cuid(2))
+  code       String   @unique
+  nameEn     String
+  nameTe     String
+  districtId String
+  lat        Float
+  lng        Float
+  createdAt  DateTime @default(now())
+  updatedAt  DateTime @updatedAt
+
+  district District @relation(fields: [districtId], references: [id])
+  depots   Depot[]
+  stops    Stop[]
+
+  @@map("bus_stands")
+}
+
+model Depot {
+  id         String   @id @default(cuid(2))
+  code       String   @unique
+  nameEn     String
+  nameTe     String
+  districtId String
+  busStandId String
+  createdAt  DateTime @default(now())
+  updatedAt  DateTime @updatedAt
+
+  district District @relation(fields: [districtId], references: [id])
+  busStand BusStand @relation(fields: [busStandId], references: [id])
+
+  routes     Route[]
+  buses      Bus[]
+  drivers    Driver[]
+  conductors Conductor[]
+  userRoles  UserRole[]
+  complaints Complaint[]
+
+  @@map("depots")
+}
+
+model Stop {
+  id         String   @id @default(cuid(2))
+  code       String   @unique
+  nameEn     String
+  nameTe     String
+  districtId String
+  busStandId String?
+  lat        Float
+  lng        Float
+  createdAt  DateTime @default(now())
+  updatedAt  DateTime @updatedAt
+
+  district District  @relation(fields: [districtId], references: [id])
+  busStand BusStand? @relation(fields: [busStandId], references: [id])
+
+  originRoutes        Route[]     @relation("OriginStop")
+  destinationRoutes   Route[]     @relation("DestinationStop")
+  routeStops          RouteStop[]
+  boardingBookings    Booking[]   @relation("BoardingStop")
+  droppingBookings    Booking[]   @relation("DroppingStop")
+  boardingTickets     Ticket[]    @relation("TicketBoardingStop")
+  droppingTickets     Ticket[]    @relation("TicketDroppingStop")
+
+  @@index([nameEn])
+  @@index([nameTe])
+  @@map("stops")
+}
+
+model Route {
+  id                String   @id @default(cuid(2))
+  code              String   @unique
+  nameEn            String
+  nameTe            String
+  originStopId      String
+  destinationStopId String
+  distanceKm        Float
+  polyline          String
+  depotId           String
+  isActive          Boolean  @default(true)
+  createdAt         DateTime @default(now())
+  updatedAt         DateTime @updatedAt
+
+  originStop      Stop      @relation("OriginStop", fields: [originStopId], references: [id])
+  destinationStop Stop      @relation("DestinationStop", fields: [destinationStopId], references: [id])
+  depot           Depot     @relation(fields: [depotId], references: [id])
+
+  routeStops RouteStop[]
+  timetables Timetable[]
+  trips      Trip[]
+  tickets    Ticket[]
+
+  @@map("routes")
+}
+
+model RouteStop {
+  id                String   @id @default(cuid(2))
+  routeId           String
+  stopId            String
+  seq               Int
+  kmFromOrigin      Float
+  minutesFromOrigin Int
+  isBoarding        Boolean  @default(true)
+  isDropping        Boolean  @default(true)
+  createdAt         DateTime @default(now())
+
+  route Route @relation(fields: [routeId], references: [id], onDelete: Cascade)
+  stop  Stop  @relation(fields: [stopId], references: [id])
+
+  @@unique([routeId, seq])
+  @@unique([routeId, stopId])
+  @@index([stopId])
+  @@map("route_stops")
+}
+
+model Timetable {
+  id             String    @id @default(cuid(2))
+  routeId        String
+  busTypeId      String
+  departureLocal String
+  daysMask       Int       @default(127)
+  validFrom      DateTime
+  validTo        DateTime?
+  isActive       Boolean   @default(true)
+  createdAt      DateTime  @default(now())
+  updatedAt      DateTime  @updatedAt
+
+  route   Route   @relation(fields: [routeId], references: [id])
+  busType BusType @relation(fields: [busTypeId], references: [id])
+  trips   Trip[]
+
+  @@map("timetables")
+}
+
+model BusType {
+  id                 String      @id @default(cuid(2))
+  serviceType        ServiceType @unique
+  nameEn             String
+  nameTe             String
+  isAc               Boolean     @default(false)
+  totalSeats         Int
+  seatLayout         Json
+  freeTravelEligible Boolean     @default(false)
+  createdAt          DateTime    @default(now())
+  updatedAt          DateTime    @updatedAt
+
+  buses      Bus[]
+  timetables Timetable[]
+  trips      Trip[]
+  fareRules  FareRule[]
+
+  @@map("bus_types")
+}
+
+model Bus {
+  id               String    @id @default(cuid(2))
+  regNo            String    @unique
+  busTypeId        String
+  depotId          String
+  status           BusStatus @default(IDLE)
+  maintenanceDueAt DateTime?
+  odometerKm       Int       @default(0)
+  createdAt        DateTime  @default(now())
+  updatedAt        DateTime  @updatedAt
+
+  busType BusType @relation(fields: [busTypeId], references: [id])
+  depot   Depot   @relation(fields: [depotId], references: [id])
+
+  maintenanceRecords MaintenanceRecord[]
+  tripAssignments    TripAssignment[]
+  gpsLocations       GpsLocation[]
+  incidents          Incident[]
+
+  @@map("buses")
+}
+
+model Driver {
+  id           String   @id @default(cuid(2))
+  userId       String   @unique
+  depotId      String
+  employeeCode String   @unique
+  licenseNo    String
+  createdAt    DateTime @default(now())
+  updatedAt    DateTime @updatedAt
+
+  user  User  @relation(fields: [userId], references: [id])
+  depot Depot @relation(fields: [depotId], references: [id])
+
+  tripAssignments TripAssignment[]
+
+  @@map("drivers")
+}
+
+model Conductor {
+  id           String   @id @default(cuid(2))
+  userId       String   @unique
+  depotId      String
+  employeeCode String   @unique
+  createdAt    DateTime @default(now())
+  updatedAt    DateTime @updatedAt
+
+  user  User  @relation(fields: [userId], references: [id])
+  depot Depot @relation(fields: [depotId], references: [id])
+
+  tripAssignments TripAssignment[]
+  ticketScans     TicketScan[]
+
+  @@map("conductors")
+}
+
+model MaintenanceRecord {
+  id        String    @id @default(cuid(2))
+  busId     String
+  kind      String
+  note      String?
+  startAt   DateTime
+  endAt     DateTime?
+  createdAt DateTime  @default(now())
+
+  bus Bus @relation(fields: [busId], references: [id])
+
+  @@map("maintenance_records")
+}
+
+model Trip {
+  id                   String     @id @default(cuid(2))
+  code                 String     @unique
+  timetableId          String
+  routeId              String
+  busTypeId            String
+  serviceDate          DateTime
+  scheduledDepartureAt DateTime
+  scheduledArrivalAt   DateTime
+  actualDepartureAt    DateTime?
+  actualArrivalAt      DateTime?
+  status               TripStatus @default(SCHEDULED)
+  delayMinutes         Int        @default(0)
+  lastStopSeq          Int?
+  hasOpenIncident      Boolean    @default(false)
+  createdAt            DateTime   @default(now())
+  updatedAt            DateTime   @updatedAt
+
+  timetable Timetable @relation(fields: [timetableId], references: [id])
+  route     Route     @relation(fields: [routeId], references: [id])
+  busType   BusType   @relation(fields: [busTypeId], references: [id])
+
+  assignments TripAssignment[]
+  gpsLocations GpsLocation[]
+  incidents   Incident[]
+  bookings    Booking[]
+  tickets     Ticket[]
+  scans       TicketScan[]
+
+  @@index([routeId, serviceDate])
+  @@index([serviceDate, status])
+  @@map("trips")
+}
+
+model TripAssignment {
+  id           String           @id @default(cuid(2))
+  tripId       String
+  busId        String
+  driverId     String
+  conductorId  String?
+  reason       AssignmentReason @default(INITIAL)
+  assignedById String
+  startedAt    DateTime         @default(now())
+  endedAt      DateTime?
+  createdAt    DateTime         @default(now())
+
+  trip      Trip       @relation(fields: [tripId], references: [id])
+  bus       Bus        @relation(fields: [busId], references: [id])
+  driver    Driver     @relation(fields: [driverId], references: [id])
+  conductor Conductor? @relation(fields: [conductorId], references: [id])
+
+  @@map("trip_assignments")
+}
+
+model GpsLocation {
+  id         BigInt   @id @default(autoincrement())
+  tripId     String
+  busId      String
+  lat        Float
+  lng        Float
+  speedKmh   Float?
+  headingDeg Float?
+  accuracyM  Float?
+  recordedAt DateTime
+  receivedAt DateTime @default(now())
+
+  trip Trip @relation(fields: [tripId], references: [id])
+  bus  Bus  @relation(fields: [busId], references: [id])
+
+  @@index([tripId, recordedAt(sort: Desc)])
+  @@map("gps_locations")
+}
+
+model Incident {
+  id               String         @id @default(cuid(2))
+  code             String         @unique
+  type             IncidentType
+  severity         Severity       @default(MEDIUM)
+  status           IncidentStatus @default(OPEN)
+  tripId           String
+  busId            String
+  reportedById     String
+  lat              Float
+  lng              Float
+  note             String?
+  acknowledgedAt   DateTime?
+  acknowledgedById String?
+  resolvedAt       DateTime?
+  resolutionNote   String?
+  createdAt        DateTime       @default(now())
+  updatedAt        DateTime       @updatedAt
+
+  trip Trip @relation(fields: [tripId], references: [id])
+  bus  Bus  @relation(fields: [busId], references: [id])
+
+  @@index([status, createdAt(sort: Desc)])
+  @@map("incidents")
+}
+
+model Booking {
+  id             String        @id @default(cuid(2))
+  code           String        @unique
+  userId         String
+  tripId         String
+  boardingStopId String
+  droppingStopId String
+  status         BookingStatus @default(PENDING_PAYMENT)
+  totalPaise     Int
+  holdExpiresAt  DateTime
+  createdAt      DateTime      @default(now())
+  updatedAt      DateTime      @updatedAt
+
+  user         User               @relation(fields: [userId], references: [id])
+  trip         Trip               @relation(fields: [tripId], references: [id])
+  boardingStop Stop               @relation("BoardingStop", fields: [boardingStopId], references: [id])
+  droppingStop Stop               @relation("DroppingStop", fields: [droppingStopId], references: [id])
+
+  passengers BookingPassenger[]
+  tickets    Ticket[]
+  payments   Payment[]
+
+  @@index([userId, createdAt(sort: Desc)])
+  @@map("bookings")
+}
+
+model BookingPassenger {
+  id        String   @id @default(cuid(2))
+  bookingId String
+  name      String
+  age       Int
+  gender    Gender
+  seatNo    String
+  createdAt DateTime @default(now())
+
+  booking Booking  @relation(fields: [bookingId], references: [id], onDelete: Cascade)
+  tickets Ticket[]
+
+  @@map("booking_passengers")
+}
+
+model Ticket {
+  id             String       @id @default(cuid(2))
+  code           String       @unique
+  bookingId      String?
+  passengerId    String?
+  type           TicketType   @default(SINGLE)
+  status         TicketStatus @default(BOOKED)
+  holderUserId   String
+  originalUserId String
+  tripId         String
+  routeId        String
+  boardingStopId String
+  droppingStopId String
+  seatNo         String?
+  farePaise      Int
+  activatedAt    DateTime?
+  validUntil     DateTime?
+  scannedAt      DateTime?
+  usedAt         DateTime?
+  expiresAt      DateTime
+  qrSecret       String
+  giftable       Boolean      @default(true)
+  transferCount  Int          @default(0)
+  version        Int          @default(1)
+  createdAt      DateTime     @default(now())
+  updatedAt      DateTime     @updatedAt
+
+  booking      Booking?          @relation(fields: [bookingId], references: [id])
+  passenger    BookingPassenger? @relation(fields: [passengerId], references: [id])
+  holderUser   User              @relation("HeldTickets", fields: [holderUserId], references: [id])
+  originalUser User              @relation("OriginalTickets", fields: [originalUserId], references: [id])
+  trip         Trip              @relation(fields: [tripId], references: [id])
+  route        Route             @relation(fields: [routeId], references: [id])
+  boardingStop Stop              @relation("TicketBoardingStop", fields: [boardingStopId], references: [id])
+  droppingStop Stop              @relation("TicketDroppingStop", fields: [droppingStopId], references: [id])
+
+  scans     TicketScan[]
+  transfers TicketTransfer[]
+  refunds   Refund[]
+
+  @@index([holderUserId, status])
+  @@index([tripId, status])
+  @@map("tickets")
+}
+
+model TicketScan {
+  id          String     @id @default(cuid(2))
+  ticketId    String?
+  passId      String?
+  tripId      String
+  conductorId String
+  result      ScanResult
+  reason      ScanReason
+  scannedAt   DateTime   @default(now())
+  deviceTime  DateTime?
+  offline     Boolean    @default(false)
+  createdAt   DateTime   @default(now())
+
+  ticket    Ticket?   @relation(fields: [ticketId], references: [id])
+  pass      Pass?     @relation(fields: [passId], references: [id])
+  trip      Trip      @relation(fields: [tripId], references: [id])
+  conductor Conductor @relation(fields: [conductorId], references: [id])
+
+  @@map("ticket_scans")
+}
+
+model TicketTransfer {
+  id         String   @id @default(cuid(2))
+  ticketId   String
+  fromUserId String
+  toUserId   String
+  createdAt  DateTime @default(now())
+
+  ticket   Ticket @relation(fields: [ticketId], references: [id])
+  fromUser User   @relation("TransfersFrom", fields: [fromUserId], references: [id])
+  toUser   User   @relation("TransfersTo", fields: [toUserId], references: [id])
+
+  @@map("ticket_transfers")
+}
+
+model PassType {
+  id                   String            @id @default(cuid(2))
+  kind                 PassKind
+  nameEn               String
+  nameTe               String
+  durationDays         Int
+  pricePaise           Int
+  eligibleServiceTypes ServiceType[]
+  scheme               EligibilityScheme?
+  isActive             Boolean           @default(true)
+  createdAt            DateTime          @default(now())
+  updatedAt            DateTime          @updatedAt
+
+  passes Pass[]
+
+  @@map("pass_types")
+}
+
+model Pass {
+  id                 String      @id @default(cuid(2))
+  code               String      @unique
+  userId             String
+  passTypeId         String
+  status             PassStatus  @default(PENDING_PAYMENT)
+  activatedAt        DateTime?
+  validFrom          DateTime?
+  validUntil         DateTime?
+  eligibilityCheckId String?
+  paymentId          String?
+  qrSecret           String
+  createdAt          DateTime    @default(now())
+  updatedAt          DateTime    @updatedAt
+
+  user             User              @relation(fields: [userId], references: [id])
+  passType         PassType          @relation(fields: [passTypeId], references: [id])
+  eligibilityCheck EligibilityCheck? @relation(fields: [eligibilityCheckId], references: [id])
+  payment          Payment?          @relation(fields: [paymentId], references: [id])
+  scans            TicketScan[]
+
+  @@map("passes")
+}
+
+model EligibilityCheck {
+  id          String            @id @default(cuid(2))
+  userId      String
+  scheme      EligibilityScheme
+  provider    String
+  result      EligibilityResult
+  reasonCode  String?
+  providerRef String?
+  checkedAt   DateTime          @default(now())
+  expiresAt   DateTime
+  createdAt   DateTime          @default(now())
+
+  user   User   @relation(fields: [userId], references: [id])
+  passes Pass[]
+
+  @@map("eligibility_checks")
+}
+
+model Payment {
+  id                String          @id @default(cuid(2))
+  bookingId         String?
+  passId            String?
+  provider          PaymentProvider @default(RAZORPAY)
+  providerOrderId   String          @unique
+  providerPaymentId String?         @unique
+  amountPaise       Int
+  status            PaymentStatus   @default(CREATED)
+  capturedAt        DateTime?
+  raw               Json?
+  createdAt         DateTime        @default(now())
+  updatedAt         DateTime        @updatedAt
+
+  booking Booking? @relation(fields: [bookingId], references: [id])
+  passes  Pass[]
+  refunds Refund[]
+
+  @@map("payments")
+}
+
+model Refund {
+  id               String       @id @default(cuid(2))
+  paymentId        String
+  ticketId         String?
+  amountPaise      Int
+  status           RefundStatus @default(PENDING)
+  providerRefundId String?      @unique
+  policyId         String
+  reason           String
+  processedAt      DateTime?
+  createdAt        DateTime     @default(now())
+  updatedAt        DateTime     @updatedAt
+
+  payment Payment      @relation(fields: [paymentId], references: [id])
+  ticket  Ticket?      @relation(fields: [ticketId], references: [id])
+  policy  RefundPolicy @relation(fields: [policyId], references: [id])
+
+  @@map("refunds")
+}
+
+model FareRule {
+  id                  String    @id @default(cuid(2))
+  busTypeId           String
+  baseFarePaise       Int
+  perKmPaise          Int
+  minFarePaise        Int
+  reservationFeePaise Int
+  validFrom           DateTime
+  validTo             DateTime?
+  createdAt           DateTime  @default(now())
+  updatedAt           DateTime  @updatedAt
+
+  busType BusType @relation(fields: [busTypeId], references: [id])
+
+  @@map("fare_rules")
+}
+
+model RefundPolicy {
+  id                   String   @id @default(cuid(2))
+  name                 String
+  tiers                Json
+  cancellationFeePaise Int      @default(0)
+  isActive             Boolean  @default(true)
+  validFrom            DateTime
+  createdAt            DateTime @default(now())
+  updatedAt            DateTime @updatedAt
+
+  refunds Refund[]
+
+  @@map("refund_policies")
+}
+
 model Setting {
   key         String   @id
   value       Json
@@ -19,4 +895,87 @@ model Setting {
   updatedAt   DateTime @updatedAt
 
   @@map("settings")
+}
+
+model Notification {
+  id        String           @id @default(cuid(2))
+  userId    String
+  type      NotificationType
+  params    Json
+  link      String?
+  readAt    DateTime?
+  emailedAt DateTime?
+  createdAt DateTime         @default(now())
+
+  user User @relation(fields: [userId], references: [id], onDelete: Cascade)
+
+  @@map("notifications")
+}
+
+model Complaint {
+  id             String           @id @default(cuid(2))
+  code           String           @unique
+  userId         String?
+  email          String
+  category       FeedbackCategory
+  message        String
+  ticketCode     String?
+  busRegNo       String?
+  routeCode      String?
+  travelDate     DateTime?
+  status         ComplaintStatus  @default(RECEIVED)
+  depotId        String?
+  assignedToId   String?
+  resolutionNote String?
+  resolvedAt     DateTime?
+  createdAt      DateTime         @default(now())
+  updatedAt      DateTime         @updatedAt
+
+  user  User?  @relation(fields: [userId], references: [id])
+  depot Depot? @relation(fields: [depotId], references: [id])
+
+  @@index([status, createdAt(sort: Desc)])
+  @@map("complaints")
+}
+
+model DailyStats {
+  id             String   @id @default(cuid(2))
+  date           DateTime
+  districtId     String?
+  depotId        String?
+  routeId        String?
+  tripsScheduled Int      @default(0)
+  tripsCompleted Int      @default(0)
+  tripsCancelled Int      @default(0)
+  avgDelayMin    Float    @default(0)
+  onTimePct      Float    @default(100)
+  passengers     Int      @default(0)
+  ticketsSold    Int      @default(0)
+  passesActive   Int      @default(0)
+  revenuePaise   BigInt   @default(0)
+  incidents      Int      @default(0)
+  complaints     Int      @default(0)
+  createdAt      DateTime @default(now())
+
+  @@map("daily_stats")
+}
+
+model AuditLog {
+  id          String   @id @default(cuid(2))
+  actorUserId String?
+  actorRole   Role?
+  action      String
+  entityType  String
+  entityId    String
+  before      Json?
+  after       Json?
+  ip          String?
+  userAgent   String?
+  createdAt   DateTime @default(now())
+
+  actorUser User? @relation(fields: [actorUserId], references: [id])
+
+  @@index([entityType, entityId])
+  @@index([actorUserId, createdAt(sort: Desc)])
+  @@map("audit_logs")
 }

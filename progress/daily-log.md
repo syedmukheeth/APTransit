@@ -4,7 +4,82 @@ Newest day on top. Each dev adds their own block at the end of every day using `
 
 Severity: **S1** blocks the demo (fix today), **S2** wrong behaviour (fix this week), **S3** polish (known issues list).
 
----
+## Day 02 · 2026-09-24 · Dev B
+
+**Done**
+- `packages/shared`:
+  - `src/codes.ts`: Crockford base32 code generators for `APT-XXXX-XXXX`, `BKG-XXXXXX`, `PAS-XXXXXX`, `CMP-XXXXXX`, `INC-XXXXXX` with checksum and parsing tests.
+  - `src/polyline.ts`: Google encoded polyline algorithm (encode and decode) with 5-decimal precision and test vectors.
+  - `src/time.ts`: Pure IST time calculation helpers (`istTimeToUtcDate`, `utcToIstParts`, `formatIstDate`, `formatIstTime`, midnight crossings, and night departure handling) with unit tests.
+  - `src/permissions.ts`: Complete role and permission matrix from docs/08 with `can(roles, permission)` helper and unit tests.
+  - `src/schemas/seat-layout.ts`: `SeatLayout` Zod schema and types matching docs/05 JSON specification.
+  - 41 unit tests passing across all shared packages.
+- `apps/api`:
+  - Full Prisma schema v1 matching docs/05: every enum, table with relations, `@@map` snake_case names, unique constraints, indexes, cuid2 ids, integer paise money, BigInt autoincrement for `gps_locations`.
+  - Generated Prisma Client and created migration `20260924000000_schema_v1`.
+  - `src/modules/trips/trip-generator.ts`: Pure function generating trips from timetables across date ranges with daysMask, validFrom/validTo, night departures, and deterministic idempotency. 5 unit tests.
+  - `prisma/seed.ts` and `prisma/seed-data.ts`: Deterministic seed (seed 20260923) with upserts for districts, stops, depots, routes, route_stops with straight-line encoded polylines, bus types with seatLayout JSON, refund policies, pass types, buses (AP 39 Z), drivers, conductors, approved driver devices, demo accounts with roles from docs/08, timetables, trips for today + 7 days with initial trip assignments, and maintenance/breakdown bus statuses.
+  - `prisma/reset.ts`: Safe database reset script guarding against production or main branch URLs.
+  - Configured `migrations.seed` in `prisma.config.ts`, added `pnpm db:seed` and `pnpm db:reset` scripts in `apps/api/package.json`.
+  - Added seed integration tests in `test/seed.test.ts`.
+
+**Merged PRs**
+- `b/schema-v1`
+
+**Carry over (starts tomorrow before the new prompt)**
+- Apply `20260924000000_schema_v1` on Neon test branch and live dev branches once Neon credentials are plugged into `.env`.
+
+**Contract changes (packages/shared)**
+- New: `codes.ts`, `polyline.ts`, `time.ts`, `permissions.ts`, `SeatLayoutSchema`.
+
+**Bugs found** (id, severity S1 to S3, one line)
+- none
+
+**Blockers or questions for the other dev**
+- None. Shared schema and seat layout verified with Dev A.
+
+**Decisions needed (also added to decisions-log.md)**
+- none
+
+## Day 02 · 2026-09-24 · Dev A
+
+**Done**
+- `packages/ui`:
+  - Configured Vitest and Testing Library (`@testing-library/react`, `@testing-library/user-event`, `@testing-library/jest-dom`, `jsdom`).
+  - Implemented all 12 primitive groups matching docs/09 design tokens, dark mode, keyboard navigation, full accessibility, and zero hardcoded strings:
+    1. `Button` (variants: primary, secondary, ghost, danger, link; sizes: md 44 px, lg 52 px, xl 56 px; loading spinner, aria-busy, blocks clicks, asChild) and `IconButton` (enforced aria-label, 44 px hit area).
+    2. `Field` (always visible label, optional hint, error message with icon, connects id, aria-describedby, aria-invalid).
+    3. `Input`, `Textarea`, `Select` (Radix), `Checkbox`, `RadioGroup`, `Switch` (16 px minimum text, border-strong tokens, error and disabled states).
+    4. `Card` (plain, interactive with focus ring, selected).
+    5. `StatusBadge` (status key from @aptransit/shared, lucide icon + label, sm and md sizes, token colors) and `ToneChip`.
+    6. `Skeleton` (line, block, card presets) and `Spinner`.
+    7. `EmptyState` and `ErrorState` (message, Retry button, optional request id).
+    8. `Dialog` (Radix; title, description, footer, focus trap, Escape closes).
+    9. `Sheet` (vaul drawer mobile bottom sheet, drag handle, close button).
+    10. `Toaster` and `toast` (sonner; success and info, mobile bottom, desktop top-right).
+    11. `Tabs` (Radix).
+    12. `Tooltip` (Radix) and `DropdownMenu` (Radix).
+  - Unit tests in `packages/ui` for Button, Field, Dialog, StatusBadge (10 tests passing).
+- `apps/web`:
+  - Built comprehensive primitives showcase in `apps/web/app/_token-check/primitives-showcase.tsx` embedded into `app/page.tsx` testing all 12 primitives across light and dark themes and mobile and desktop viewports.
+
+**Merged PRs**
+- `a/ui-primitives`
+
+**Carry over (starts tomorrow before the new prompt)**
+- Delete temporary showcase in `apps/web/app/page.tsx` on Day 3 and replace with citizen shell and route layout.
+
+**Contract changes (packages/shared)**
+- Agreed and consumed `SeatLayout` Zod schema and `STATUS_MAP`.
+
+**Bugs found** (id, severity S1 to S3, one line)
+- none
+
+**Blockers or questions for the other dev**
+- none
+
+**Decisions needed (also added to decisions-log.md)**
+- D-011 (allow esbuild in pnpm-workspace.yaml)
 
 ## Day 01 · 2026-09-23 · Dev B
 
