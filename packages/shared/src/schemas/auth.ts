@@ -93,6 +93,7 @@ export const UserRoleDto = z.object({
   role: Role,
   depotId: z.string().nullable().optional(),
   districtId: z.string().nullable().optional(),
+  stateId: z.string().nullable().optional(),
 });
 export type UserRoleDto = z.infer<typeof UserRoleDto>;
 

@@ -28,11 +28,25 @@ export const PlaceDto = z.object({
 export type PlaceDto = z.infer<typeof PlaceDto>;
 export const PlacesSearchResponse = z.array(PlaceDto);
 
+/** GET /network/states (D-034): a state with its map view. Bounds are [minLng, minLat, maxLng, maxLat]. */
+export const StateDto = z.object({
+  id: z.string(),
+  code: z.string(),
+  nameEn: z.string(),
+  nameTe: z.string(),
+  center: z.object({ lat: z.number(), lng: z.number() }),
+  bounds: z.tuple([z.number(), z.number(), z.number(), z.number()]),
+  zoom: z.number().int(),
+});
+export type StateDto = z.infer<typeof StateDto>;
+export const StatesResponse = z.array(StateDto);
+
 export const DistrictDto = z.object({
   id: z.string(),
   code: z.string(),
   nameEn: z.string(),
   nameTe: z.string(),
+  stateId: z.string(),
   busStandCount: z.number().int().nonnegative(),
 });
 export type DistrictDto = z.infer<typeof DistrictDto>;

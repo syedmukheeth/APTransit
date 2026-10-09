@@ -1,5 +1,4 @@
 import {
-  can,
   formatIstDate,
   SeatLayoutSchema,
   type Permission,
@@ -19,6 +18,7 @@ import { z } from "zod";
 import { Inject, Injectable } from "@nestjs/common";
 import type { AuthenticatedUser } from "../../common/auth/auth.types";
 import { AppError } from "../../common/errors/app-error";
+import { depotScopeWhere } from "../../common/services/scope.service";
 import { DomainEventsService } from "../../common/events/domain-events.service";
 import { PrismaService } from "../../prisma/prisma.service";
 import { RedisService } from "../../redis/redis.service";
@@ -40,7 +40,7 @@ const assignmentInclude = {
   conductor: { include: { user: true } },
 } as const;
 const tripInclude = {
-  route: { include: { depot: true } },
+  route: { include: { depot: { include: { district: { select: { stateId: true } } } } } },
   assignments: { include: assignmentInclude, orderBy: { startedAt: "desc" } },
   tickets: {
     where: { status: { in: ["BOOKED", "ACTIVE", "SCANNED", "USED"] } },
@@ -114,22 +114,7 @@ export class OpsService {
     permission: Permission = "ops:read",
     depotId?: string,
   ): Prisma.DepotWhereInput {
-    const roles = user.roles.filter((r) => can([r.role], permission));
-    if (!roles.length) throw new AppError("FORBIDDEN", "Permission denied");
-    const global = roles.some((r) =>
-      ["STATE_ADMIN", "SUPER_ADMIN", "TRANSPORT_OFFICER"].includes(r.role),
-    );
-    const allowed: Prisma.DepotWhereInput = global
-      ? {}
-      : {
-          OR: roles.flatMap<Prisma.DepotWhereInput>((r) =>
-            r.role === "DISTRICT_OFFICER" && r.districtId
-              ? [{ districtId: r.districtId }]
-              : r.depotId
-                ? [{ id: r.depotId }]
-                : [],
-          ),
-        };
+    const allowed = depotScopeWhere(user, permission);
     return depotId ? { AND: [allowed, { id: depotId }] } : allowed;
   }
   private async depot(user: AuthenticatedUser, id: string, permission: Permission = "ops:read") {
@@ -515,6 +500,7 @@ export class OpsService {
         routeId: trip.routeId,
         depotId: trip.route.depotId,
         districtId: trip.route.depot.districtId,
+        stateId: trip.route.depot.district.stateId,
       },
     });
   }
@@ -834,6 +820,7 @@ export class OpsService {
         routeId: trip.routeId,
         depotId: trip.route.depotId,
         districtId: trip.route.depot.districtId,
+        stateId: trip.route.depot.district.stateId,
       },
     });
     this.publishTrip(await this.trip(user, trip.id, "incident:manage"));

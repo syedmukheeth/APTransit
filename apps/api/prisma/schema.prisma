@@ -240,11 +240,14 @@ model UserRole {
   role       Role
   depotId    String?
   districtId String?
+  /// Set for STATE_ADMIN and TRANSPORT_OFFICER; SUPER_ADMIN is platform wide (D-034)
+  stateId    String?
   createdAt  DateTime  @default(now())
 
   user     User      @relation(fields: [userId], references: [id], onDelete: Cascade)
   depot    Depot?    @relation(fields: [depotId], references: [id])
   district District? @relation(fields: [districtId], references: [id])
+  state    State?    @relation(fields: [stateId], references: [id])
 
   @@unique([userId, role, depotId, districtId])
   @@map("user_roles")
@@ -295,19 +298,51 @@ model Device {
   @@map("devices")
 }
 
+/// Top of the network: State > District > Depot > Route > Bus > Trip (D-034). A new state is data.
+model State {
+  id          String   @id @default(cuid(2))
+  /// "AP", "TG"
+  code        String   @unique
+  nameEn      String
+  nameTe      String
+  /// Must equal the platform time zone until per state zones exist
+  timezone    String   @default("Asia/Kolkata")
+  /// Prefix for new depot, route and stop codes of this state
+  codePrefix  String
+  minLat      Float
+  minLng      Float
+  maxLat      Float
+  maxLng      Float
+  centerLat   Float
+  centerLng   Float
+  defaultZoom Int      @default(7)
+  isActive    Boolean  @default(true)
+  createdAt   DateTime @default(now())
+  updatedAt   DateTime @updatedAt
+
+  districts District[]
+  userRoles UserRole[]
+  passTypes PassType[]
+
+  @@map("states")
+}
+
 model District {
   id        String   @id @default(cuid(2))
   code      String   @unique
   nameEn    String
   nameTe    String
+  stateId   String
   createdAt DateTime @default(now())
   updatedAt DateTime @updatedAt
 
+  state     State      @relation(fields: [stateId], references: [id])
   busStands BusStand[]
   depots    Depot[]
   stops     Stop[]
   userRoles UserRole[]
 
+  @@index([stateId])
   @@map("districts")
 }
 
@@ -777,9 +812,12 @@ model PassType {
   eligibleServiceTypes ServiceType[]
   scheme               EligibilityScheme?
   isActive             Boolean           @default(true)
+  /// Null means sold in every state
+  stateId              String?
   createdAt            DateTime          @default(now())
   updatedAt            DateTime          @updatedAt
 
+  state  State? @relation(fields: [stateId], references: [id])
   passes Pass[]
 
   @@map("pass_types")
@@ -959,6 +997,8 @@ model Complaint {
 model DailyStats {
   id             String   @id @default(cuid(2))
   date           DateTime
+  /// Set on every row; the state row is the one with no district, depot or route (D-034)
+  stateId        String?
   districtId     String?
   depotId        String?
   routeId        String?
@@ -976,6 +1016,7 @@ model DailyStats {
   createdAt      DateTime @default(now())
 
   @@index([date, routeId])
+  @@index([date, stateId])
   @@map("daily_stats")
 }
 

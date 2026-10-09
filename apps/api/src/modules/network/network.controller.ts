@@ -7,6 +7,7 @@ import {
   PublicId,
   type RouteDto,
   SearchTripsQuery,
+  type StateDto,
   type TimetableDto,
   TimetableQuery,
   type TripSummaryDto,
@@ -30,6 +31,12 @@ export class NetworkController {
   @Get("places/search")
   searchPlaces(@Query(new ZodValidationPipe(PlacesSearchQuery)) query: PlacesSearchQuery): Promise<PlaceDto[]> {
     return this.network.searchPlaces(query);
+  }
+
+  /** D-034: active states with their map view, for the gov state picker and maps. */
+  @Get("states")
+  states(): Promise<StateDto[]> {
+    return this.network.states();
   }
 
   @Get("districts")

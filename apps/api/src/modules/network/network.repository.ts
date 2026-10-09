@@ -2,6 +2,7 @@ import type {
   BusStandDto,
   BusStandRouteDto,
   DistrictDto,
+  StateDto,
   FareRuleInput,
   RouteDto,
   ServiceType,
@@ -106,9 +107,23 @@ export class NetworkRepository {
     }));
   }
 
+  /** Active states by code. Bounds are [minLng, minLat, maxLng, maxLat]. */
+  async states(): Promise<StateDto[]> {
+    const rows = await this.prisma.state.findMany({ where: { isActive: true }, orderBy: [{ code: "asc" }] });
+    return rows.map((s) => ({
+      id: s.id,
+      code: s.code,
+      nameEn: s.nameEn,
+      nameTe: s.nameTe,
+      center: { lat: s.centerLat, lng: s.centerLng },
+      bounds: [s.minLng, s.minLat, s.maxLng, s.maxLat],
+      zoom: s.defaultZoom,
+    }));
+  }
+
   async districts(): Promise<DistrictDto[]> {
     const rows = await this.prisma.district.findMany({
-      select: { id: true, code: true, nameEn: true, nameTe: true, _count: { select: { busStands: true } } },
+      select: { id: true, code: true, nameEn: true, nameTe: true, stateId: true, _count: { select: { busStands: true } } },
       orderBy: { nameEn: "asc" },
     });
     return rows.map((d) => ({
@@ -116,6 +131,7 @@ export class NetworkRepository {
       code: d.code,
       nameEn: d.nameEn,
       nameTe: d.nameTe,
+      stateId: d.stateId,
       busStandCount: d._count.busStands,
     }));
   }

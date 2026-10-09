@@ -35,6 +35,7 @@ const prisma = createMemoryPrisma(
       assignments: () => [],
     },
     ticket: { trip: (t) => by("trip", t.tripId) },
+    depot: { district: (d) => by("district", d.districtId) },
     user: { userRoles: (u) => tables.userRole?.filter((r) => r.userId === u.id) },
     auditLog: {
       actorUser: (a) => ({
@@ -44,7 +45,7 @@ const prisma = createMemoryPrisma(
     },
   },
   {
-    userRole: { depotId: null, districtId: null },
+    userRole: { depotId: null, districtId: null, stateId: null },
     stop: { busStandId: null },
     timetable: { validTo: null },
     fareRule: { validTo: null },
@@ -53,7 +54,9 @@ const prisma = createMemoryPrisma(
     setting: { updatedById: null },
   },
 );
-const districtId = "districttest01",
+const stateId = "statetest0001",
+  otherStateId = "statetest0002",
+  districtId = "districttest01",
   depotId = "depottest0001",
   stop1 = "stoptest00001",
   stop2 = "stoptest00002",
@@ -97,7 +100,7 @@ describe("Day 14 admin HTTP", () => {
     configureHttpApp(app);
     await app.init();
     const auth = module.get(AuthService) as any;
-    admin = await auth.generateAccessToken("admintest0001", [{ role: "STATE_ADMIN" }]);
+    admin = await auth.generateAccessToken("admintest0001", [{ role: "STATE_ADMIN", stateId }]);
     root = await auth.generateAccessToken("roottest00001", [{ role: "SUPER_ADMIN" }]);
     manager = await auth.generateAccessToken("managertest01", [{ role: "DEPOT_MANAGER", depotId }]);
     citizen = await auth.generateAccessToken("citizentest01", [{ role: "CITIZEN" }]);
@@ -110,7 +113,11 @@ describe("Day 14 admin HTTP", () => {
       past = new Date(+now - 86400000),
       future = new Date(+now + 86400000);
     Object.assign(tables, {
-      district: [{ id: districtId, code: "TST", nameEn: "Test", nameTe: "Test" }],
+      state: [
+        { id: stateId, code: "AP" },
+        { id: otherStateId, code: "TG" },
+      ],
+      district: [{ id: districtId, code: "TST", nameEn: "Test", nameTe: "Test", stateId }],
       depot: [{ id: depotId, code: "TST", nameEn: "Test depot", nameTe: "Test depot", districtId }],
       busStand: [],
       busType: [
@@ -262,6 +269,7 @@ describe("Day 14 admin HTTP", () => {
           role: "SUPER_ADMIN",
           depotId: null,
           districtId: null,
+          stateId: null,
         },
         {
           id: "adminroletest1",
@@ -269,6 +277,7 @@ describe("Day 14 admin HTTP", () => {
           role: "STATE_ADMIN",
           depotId: null,
           districtId: null,
+          stateId,
         },
         {
           id: "managerrole01",
@@ -276,6 +285,7 @@ describe("Day 14 admin HTTP", () => {
           role: "DEPOT_MANAGER",
           depotId,
           districtId: null,
+          stateId: null,
         },
       ],
       fareRule: [
@@ -459,11 +469,19 @@ describe("Day 14 admin HTTP", () => {
     expect(tables.auditLog).toHaveLength(1);
   });
   it("limits admin grants and revokes to super admin, validates scope and protects last role", async () => {
-    expect((await write("post", "users/citizentest01/roles", { role: "STATE_ADMIN" })).status).toBe(
+    expect((await write("post", "users/citizentest01/roles", { role: "STATE_ADMIN", stateId })).status).toBe(
       403,
     );
     expect((await write("post", "users/citizentest01/roles", { role: "DRIVER" })).status).toBe(400);
-    const r = await write("post", "users/citizentest01/roles", { role: "STATE_ADMIN" }, root);
+    // D-034: state roles need a state, and a state admin grants only inside their own state
+    expect((await write("post", "users/citizentest01/roles", { role: "STATE_ADMIN" }, root)).status).toBe(400);
+    expect((await write("post", "users/citizentest01/roles", { role: "TRANSPORT_OFFICER", stateId: otherStateId })).status).toBe(403);
+    const officer = await write("post", "users/citizentest01/roles", { role: "TRANSPORT_OFFICER", stateId });
+    expect(officer.status, officer.text).toBe(201);
+    expect(officer.body.stateId).toBe(stateId);
+    tables.userRole = tables.userRole!.filter((x) => x.id !== officer.body.id);
+    tables.auditLog = [];
+    const r = await write("post", "users/citizentest01/roles", { role: "STATE_ADMIN", stateId }, root);
     expect(r.status, r.text).toBe(201);
     expect((await write("delete", "users/citizentest01/roles/" + r.body.id)).status).toBe(403);
     expect((await write("delete", "users/citizentest01/roles/" + r.body.id, {}, root)).status).toBe(

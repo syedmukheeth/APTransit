@@ -38,6 +38,8 @@ export interface LiveRooms {
   routeId: string;
   depotId: string;
   districtId: string;
+  /** Room state:{id} (D-034). */
+  stateId: string;
 }
 
 export type DomainEventName = keyof DomainEvents;

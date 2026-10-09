@@ -111,19 +111,28 @@ export const GenerateTripsInput = z
 export type GenerateTripsInput = z.infer<typeof GenerateTripsInput>;
 export const GenerateTripsDto = z.object({ count: z.number().int().nonnegative() });
 export type GenerateTripsDto = z.infer<typeof GenerateTripsDto>;
+/** Roles scoped to one state (D-034). SUPER_ADMIN is platform wide and takes no scope. */
+export const STATE_SCOPED_ROLES: readonly Role[] = ["STATE_ADMIN", "TRANSPORT_OFFICER"];
+
 export const GrantRoleInput = z
-  .object({ role: Role, depotId: PublicId.optional(), districtId: PublicId.optional() })
+  .object({
+    role: Role,
+    depotId: PublicId.optional(),
+    districtId: PublicId.optional(),
+    stateId: PublicId.optional(),
+  })
   .strict()
   .superRefine((x, ctx) => {
     const depotRole = ["DRIVER", "CONDUCTOR", "DEPOT_STAFF", "DEPOT_MANAGER"].includes(x.role);
-    if (
-      depotRole
-        ? !x.depotId || !!x.districtId
-        : x.role === "DISTRICT_OFFICER"
-          ? !x.districtId || !!x.depotId
-          : !!x.depotId || !!x.districtId
-    )
-      ctx.addIssue({ code: "custom", message: "Role scope does not match role" });
+    const scopes = [x.depotId, x.districtId, x.stateId].filter(Boolean).length;
+    const ok = depotRole
+      ? !!x.depotId && scopes === 1
+      : x.role === "DISTRICT_OFFICER"
+        ? !!x.districtId && scopes === 1
+        : STATE_SCOPED_ROLES.includes(x.role)
+          ? !!x.stateId && scopes === 1
+          : scopes === 0;
+    if (!ok) ctx.addIssue({ code: "custom", message: "Role scope does not match role" });
   });
 export type GrantRoleInput = z.infer<typeof GrantRoleInput>;
 export const AdminRoleDto = z.object({
@@ -132,6 +141,7 @@ export const AdminRoleDto = z.object({
   role: Role,
   depotId: PublicId.nullable(),
   districtId: PublicId.nullable(),
+  stateId: PublicId.nullable(),
 });
 export type AdminRoleDto = z.infer<typeof AdminRoleDto>;
 

@@ -4,6 +4,7 @@ import {
   type BusStandRouteDto,
   type DistrictDto,
   formatIstDate,
+  type StateDto,
   formatIstTime,
   localTimeToUtc,
   type PlaceDto,
@@ -32,9 +33,10 @@ export class NetworkService {
   private readonly logger = new Logger(NetworkService.name);
   private readonly placesCache = new TtlCache<PlaceDto[]>(CACHE_TTL_MS);
   private readonly districtsCache = new TtlCache<DistrictDto[]>(CACHE_TTL_MS, 1);
+  private readonly statesCache = new TtlCache<StateDto[]>(CACHE_TTL_MS, 1);
   private readonly settingsCache = new TtlCache<number>(CACHE_TTL_MS, 50);
 
-  invalidateAdminChanges(): void { this.placesCache.clear(); this.districtsCache.clear(); this.settingsCache.clear(); }
+  invalidateAdminChanges(): void { this.placesCache.clear(); this.districtsCache.clear(); this.statesCache.clear(); this.settingsCache.clear(); }
 
   constructor(
     private readonly repo: NetworkRepository,
@@ -58,6 +60,10 @@ export class NetworkService {
           districtNameTe: s.districtNameTe,
         }));
     });
+  }
+
+  states(): Promise<StateDto[]> {
+    return this.statesCache.getOrLoad("all", () => this.repo.states());
   }
 
   districts(): Promise<DistrictDto[]> {

@@ -1,3 +1,4 @@
+import { PLATFORM_TIME_ZONE } from "@aptransit/shared";
 import { createPrivateKey } from "node:crypto";
 import { z } from "zod";
 
@@ -59,7 +60,7 @@ export const EnvSchema = z
     PAYMENTS_FAKE: flag,
     WORKER: flag,
     BULLMQ_DRAIN_DELAY_SEC: z.coerce.number().int().min(5).default(60),
-    TZ_DISPLAY: z.literal("Asia/Kolkata").default("Asia/Kolkata"),
+    TZ_DISPLAY: z.literal(PLATFORM_TIME_ZONE).default(PLATFORM_TIME_ZONE),
   })
   .superRefine((env, ctx) => {
     if (env.APP_ENV === "production" && env.OTP_DEV_ECHO) {

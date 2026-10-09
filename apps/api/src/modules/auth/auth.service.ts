@@ -262,6 +262,7 @@ export class AuthService {
       role: r.role,
       depotId: r.depotId,
       districtId: r.districtId,
+      stateId: r.stateId,
     }));
     const accessToken = await this.generateAccessToken(user.id, rolesPayload);
 
@@ -356,6 +357,7 @@ export class AuthService {
       role: r.role,
       depotId: r.depotId,
       districtId: r.districtId,
+      stateId: r.stateId,
     }));
     const accessToken = await this.generateAccessToken(user.id, rolesPayload);
 
@@ -462,12 +464,13 @@ export class AuthService {
     email: string | null;
     phone: string | null;
     preferredLocale: string;
-    userRoles: { role: string; depotId: string | null; districtId: string | null }[];
+    userRoles: { role: string; depotId: string | null; districtId: string | null; stateId: string | null }[];
   }): MeDto {
     const roles: UserRoleDto[] = user.userRoles.map((r) => ({
       role: r.role as Role,
       depotId: r.depotId,
       districtId: r.districtId,
+      stateId: r.stateId,
     }));
 
     return {
