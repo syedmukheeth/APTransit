@@ -20,6 +20,7 @@
 | G12 | Government system connections | None in MVP | |
 | G13 | Retention periods for tickets, payments, audit logs | Keep everything during the pilot | [05](05-data-model.md) |
 | G14 | Login method for citizens | Email OTP (real), phone OTP (dev only, SMS needs DLT registration) | [06](06-api-contract.md) |
+| G15 | Platform name when more states join (v2 P2) | Code and data are state neutral (D-034); the product name stays "AP TransitOS" and the `APT-` and `APT1` prefixes stay platform wide until the client decides | [05](05-data-model.md) |
 
 ## Ticket rules to decide (plan sec 106)
 

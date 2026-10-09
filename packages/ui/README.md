@@ -122,7 +122,7 @@ Day 4 additions:
 
 ## Tracking components
 
-RouteProgress is exported from the main entry and announces the current stop politely. MapView is exported only from @aptransit/ui/map-view, so consumers can dynamically import it without adding MapLibre to other routes. It reads map colours from theme variables, shows attribution and provides a separate recenter button. --spacing-tracking-map defines the mobile map height.
+RouteProgress is exported from the main entry and announces the current stop politely. MapView is exported only from @aptransit/ui/map-view, so consumers can dynamically import it without adding MapLibre to other routes. It reads map colours from theme variables, shows attribution and provides a separate recenter button. --spacing-tracking-map defines the mobile map height. MapView, OpsMap and GovMap take `bounds` ([minLng, minLat, maxLng, maxLat] from `GET /states`, D-034); `DEFAULT_MAP_BOUNDS` (AP) is only the fallback while states load. OpsMap and GovMap remount when the bounds change.
 
 --map-line-width supplies pixel widths for the map renderer.
 

@@ -48,16 +48,19 @@
 | Table | Fields | Notes |
 | --- | --- | --- |
 | users | id, phone?, email?, name?, preferredLocale (`en` or `te`), createdAt, updatedAt, deletedAt? | phone and email each unique when present. At least one required |
-| user_roles | id, userId, role, depotId?, districtId? | Scope: depot roles need depotId, district roles need districtId. Unique (userId, role, depotId, districtId) |
+| user_roles | id, userId, role, depotId?, districtId?, stateId? | Scope: depot roles need depotId, district roles need districtId, STATE_ADMIN and TRANSPORT_OFFICER need stateId (D-034). SUPER_ADMIN has no scope (every state). Unique (userId, role, depotId, districtId) |
 | otp_codes | id, channel, target, codeHash, purpose (`LOGIN`), attempts, expiresAt, consumedAt? | Code hashed with SHA 256 + `OTP_PEPPER`. TTL 5 min. Max 5 attempts |
 | refresh_tokens | id, userId, tokenHash, familyId, expiresAt, revokedAt?, replacedById?, userAgent?, createdAt | Rotation with reuse detection: reuse revokes the whole family |
 | devices | id, userId, label, deviceKeyHash, approvedAt?, approvedById?, revokedAt? | Only approved devices of the assigned driver may send GPS (sec 62) |
 
 ### Network
 
+The network is State > District > Depot > Route > Bus > Trip (D-034). A new state is data: a `states` row plus its districts, never a code change.
+
 | Table | Fields | Notes |
 | --- | --- | --- |
-| districts | id, code, nameEn, nameTe | Seed: see [19-seed-data.md](19-seed-data.md) |
+| states | id, code (`AP`, `TG`), nameEn, nameTe, timezone (default `Asia/Kolkata`), codePrefix, minLat, minLng, maxLat, maxLng, centerLat, centerLng, defaultZoom (7), isActive | AP has the fixed id `stateap000000000000000000` (backfill migration and seed agree). Bounds drive the GPS trust box (docs/12) and the maps. The platform has one time zone (`PLATFORM_TIME_ZONE` in packages/shared time.ts); a state whose zone differs is refused. `codePrefix` is for new depot, route and stop codes; the `APT-` ticket and `APT1` QR prefixes stay platform wide |
+| districts | id, code, nameEn, nameTe, stateId | Seed: see [19-seed-data.md](19-seed-data.md). Index (stateId) |
 | bus_stands | id, code, nameEn, nameTe, districtId, lat, lng | |
 | depots | id, code, nameEn, nameTe, districtId, busStandId | |
 | stops | id, code, nameEn, nameTe, districtId, busStandId?, lat, lng | A bus stand is also a stop |
@@ -98,7 +101,7 @@
 
 | Table | Fields | Notes |
 | --- | --- | --- |
-| pass_types | id, kind, nameEn, nameTe, durationDays, pricePaise, eligibleServiceTypes (ServiceType[]), scheme?, isActive | FREE_TRAVEL has pricePaise 0 and scheme STREE_SHAKTI |
+| pass_types | id, kind, nameEn, nameTe, durationDays, pricePaise, eligibleServiceTypes (ServiceType[]), scheme?, isActive, stateId? | FREE_TRAVEL has pricePaise 0 and scheme STREE_SHAKTI. stateId null means sold in every state |
 | passes | id, code, userId, passTypeId, status, activatedAt?, validFrom?, validUntil?, eligibilityCheckId?, paymentId?, qrSecret (encrypted), createdAt | Never giftable |
 | eligibility_checks | id, userId, scheme, provider, result, reasonCode?, providerRef, checkedAt, expiresAt | Stores the **result only**. No Aadhaar number, no document image (sec 51) |
 | payments | id, bookingId?, passId?, provider (`RAZORPAY`), providerOrderId (unique), providerPaymentId? (unique), amountPaise, status, capturedAt?, raw (JSON, redacted), createdAt | Exactly one of bookingId or passId |
@@ -113,11 +116,13 @@
 | --- | --- | --- |
 | notifications | id, userId, type, params (JSON), link?, readAt?, emailedAt?, createdAt | Text is rendered from i18n keys `notifications.<type>.title` and `.body` in the user locale |
 | complaints | id, code, userId?, email, category, message, ticketCode?, busRegNo?, routeCode?, travelDate?, status, depotId?, assignedToId?, resolutionNote?, resolvedAt?, createdAt, updatedAt | Feedback and complaints are one table. Every submission gets a code (sec 41) |
-| daily_stats | id, date, districtId?, depotId?, routeId?, tripsScheduled, tripsCompleted, tripsCancelled, avgDelayMin, onTimePct, passengers, ticketsSold, passesActive, revenuePaise, incidents, complaints | Rollup job at 00:15 IST, plus live numbers for today from queries |
+| daily_stats | id, date, stateId?, districtId?, depotId?, routeId?, tripsScheduled, tripsCompleted, tripsCancelled, avgDelayMin, onTimePct, passengers, ticketsSold, passesActive, revenuePaise, incidents, complaints | Rollup job at 00:15 IST, plus live numbers for today from queries. Every row has its stateId; one state row per active state (no district, depot or route). Complaints without a depot and passes of a type without a state count in every state row |
 | audit_logs | id, actorUserId?, actorRole?, action, entityType, entityId, before (JSON)?, after (JSON)?, ip?, userAgent?, createdAt | Append only. See audit events in [12-security.md](12-security.md) |
 
 ## Indexes (minimum)
 
+- districts: (stateId)
+- daily_stats: (date, routeId), (date, stateId)
 - trips: (routeId, serviceDate), (serviceDate, status)
 - route_stops: (stopId)
 - tickets: (holderUserId, status), (tripId, status). Seat uniqueness per trip is enforced in the booking transaction plus the Redis hold

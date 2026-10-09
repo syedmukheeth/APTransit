@@ -26,7 +26,8 @@ The contract between web and API: zod schemas, enums, error codes, the status ma
 | `src/schemas/health.ts` | `HealthDto`, `ProbeState` |
 | `src/fare.ts` | `calculateFare({ distanceKm, rule, isFreeTravel })` (per km with a minimum, nearest rupee, plus reservation fee), `refundQuote(...)` (docs/07 section 6 tiers, operator cancel, free tickets), `DEFAULT_REFUND_TIERS`, `FareRuleInput`, `RefundTier`. The only place fares are computed |
 | `src/schemas/search.ts` | `PublicId`, `ServiceDateString` (real YYYY-MM-DD), `LocalTimeString` (HH:mm), `SearchTripsQuery`, `TripSummaryDto`, `SearchTripsResponse` |
-| `src/schemas/network.ts` | `PlacesSearchQuery`, `PlaceDto`, `DistrictDto`, `BusStandDto`, `BusStandRouteDto`, `RouteDto` (ordered `stops`), `TimetableQuery`, `TimetableDto`, and array `...Response` schemas for the web client |
+| `src/time.ts` | `PLATFORM_TIME_ZONE` (the one zone, D-034; never write the zone literal elsewhere), `localTimeToUtc`, `utcToIstParts`, `formatIstDate`, `formatIstTime`, `computeTripSchedule` |
+| `src/schemas/network.ts` | `PlacesSearchQuery`, `PlaceDto`, `StateDto` and `StatesResponse` (GET /states), `DistrictDto` (with `stateId`), `BusStandDto`, `BusStandRouteDto`, `RouteDto` (ordered `stops`), `TimetableQuery`, `TimetableDto`, and array `...Response` schemas for the web client |
 
 Planned next (see the day prompts): `codes.ts`, `polyline.ts`, `time.ts`, `permissions.ts` (Day 2), `schemas/auth.ts` and `messages/` (Day 3), `format.ts` (Day 5), `qr.ts` (Day 7).
 

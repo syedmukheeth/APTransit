@@ -49,7 +49,7 @@ Over the limit: 429 `RATE_LIMITED` with `Retry-After`.
 
 ## GPS trust (plan sec 62)
 
-A ping is accepted only when all are true: the caller is a DRIVER, the `X-Device-Key` matches an approved, not revoked device of that driver, the trip is RUNNING and assigned to that driver now, and the point is sane (inside the AP bounding box plus 50 km, speed under 120 km/h, timestamp within 2 min of server time). Rejected pings are counted, not stored.
+A ping is accepted only when all are true: the caller is a DRIVER, the `X-Device-Key` matches an approved, not revoked device of that driver, the trip is RUNNING and assigned to that driver now, and the point is sane (inside the bounding box of the trip's state plus about 50 km, from the `states` row, D-034, speed under 120 km/h, timestamp within 2 min of server time). Rejected pings are counted, not stored.
 
 ## Identity data (plan sec 51)
 

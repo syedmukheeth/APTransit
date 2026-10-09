@@ -4,6 +4,12 @@
 
 All coordinates are approximate. All bus registrations, staff names and fares are **demo values**, not official data. Town names are real so the demo feels familiar. District list is a subset, see [18](18-open-decisions.md) I2.
 
+## State (D-034)
+
+One `states` row: Andhra Pradesh, code `AP`, fixed id `stateap000000000000000000`, bounds `[76.7, 12.6, 84.8, 19.95]`, centre `[78, 16]`, zoom 7. Every district below belongs to it. Pass types and the TRANSPORT_OFFICER and STATE_ADMIN demo roles carry the AP state.
+
+`pnpm db:seed --with-tg` adds a Telangana stub to prove a new state is only data: state `TG` (bounds `[77.23, 15.83, 81.33, 19.92]`, centre `[79.3, 17.9]`), districts `TG-HYD` Hyderabad and `TG-WGL` Hanumakonda, bus stands `TG-MGBS` and `TG-HNK`, depots `D-TG-HYD` and `D-TG-WGL` (no buses, routes or trips), and `admin.tg@aptransit.test` as STATE_ADMIN of TG. Demo data, not operations data.
+
 ## Districts (subset)
 
 | Code | English | తెలుగు |
@@ -130,5 +136,6 @@ See [08-roles-permissions.md](08-roles-permissions.md). Plus two approved driver
 ```bash
 pnpm db:seed                 # base data + today and next 7 days
 pnpm db:seed --history 14    # also 14 days of history (used on staging)
+pnpm db:seed --with-tg       # also the Telangana stub (D-034)
 pnpm db:reset                # drop, migrate, seed (local only)
 ```

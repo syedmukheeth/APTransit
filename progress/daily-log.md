@@ -4,6 +4,30 @@ Newest day on top. Each dev adds their own block at the end of every day using `
 
 Severity: **S1** blocks the demo (fix today), **S2** wrong behaviour (fix this week), **S3** polish (known issues list).
 
+## v2 P2: 2026-10-09, state model and multi state scope (Dev B)
+
+**Done**
+- `states` table and stateId on districts (required), user_roles, pass_types, daily_stats. Two migrations; applied as an upgrade to a seeded local database (PGlite): AP inserted with the fixed id, 10 districts, the two state roles, 3 pass types and every daily_stats row backfilled; `prisma migrate diff` against the schema is empty.
+- One scope implementation (`scope.service.ts`) used by ops, tracking, gov, analytics, reports, feedback and admin. SUPER_ADMIN platform wide; state roles limited to their state; a state admin grants roles only in their state.
+- Socket `state:{id}` rooms; GPS box per state; `GET /states`; `/gov/overview` and `/gov/map` take `stateId`; rollups write one state row per state; `PLATFORM_TIME_ZONE` replaces every code literal.
+- Web: state picker on `/gov` for SUPER_ADMIN, `/gov/state/[id]`, breadcrumb root from the API, map bounds per state, `state:{id}` rooms in gov and ops, state select when granting state roles, generic copy without "Andhra Pradesh".
+- Seed: AP state row; `pnpm db:seed --with-tg` adds the Telangana stub. Docs 04, 05, 06, 08, 12, 13, 18, 19 and D-034.
+
+**Checks**
+- Unit: API 434 passed, 6 database tests skipped (`vitest run --maxWorkers=2`; full parallel times out on this laptop), shared 125, ui 106, web 44. Lint, typecheck, i18n, dashes, check:endpoints, check:classes pass. Web production build passes.
+- HTTP on the local stack with `--with-tg`: transport@ sees 6 AP depots and gets 403 for the TG overview; admin.tg@ sees the 2 TG depots and gets 403 for AP; root@ sees both states.
+- Browser (production build): root sees the state picker, Telangana opens with its own map and districts, breadcrumb All states > Telangana > Hyderabad; Telugu names render.
+- E2E on Desktop Chrome: E2E-10, E2E-7, E2E-9 and the route sweep (now with `/gov/state/<AP id>`) pass. `operations.spec.ts` failed twice at its 5 s heading wait in the Telugu loop on this laptop and passed with a 20 s expect timeout. Pixel 7 and the other specs not run today.
+
+**Contract changes (packages/shared)**
+- `PLATFORM_TIME_ZONE`, `StateDto`, `StatesResponse`, `DistrictDto.stateId`, `UserRoleDto.stateId`, `GrantRoleInput.stateId` (required for state roles), `AdminRoleDto.stateId`, `GovStateQuery`, `STATE_SCOPED_ROLES`, `LiveRoom` accepts `state:<id>` instead of `state`. Needs Dev A review.
+
+**Bugs found**
+- S3 fixed: the web called `/network/districts` (404), so gov breadcrumbs always showed "District".
+
+**Decisions needed**
+- D-034. Review at the sync. Deploy web and API together (room rename).
+
 ## Day 19: 2026-10-08, release checks (local and Neon)
 
 **Done**

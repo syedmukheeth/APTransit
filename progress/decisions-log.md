@@ -293,6 +293,25 @@ The only way to change a locked doc in `docs/`. Add an entry, agree at the daily
   - Two small deviations from the spec: the scan result auto reset is a draining bar (transform only) instead of a ring, because the spec limits motion to transform and opacity; the dialog max width stays `max-w-lg` (512 px) instead of 480 px, to avoid an arbitrary value.
 - **Status:** Proposed for the other dev review. docs/09 updated in the same PR (P1).
 
+### D-034: v2 state model and multi state scope
+- **Date:** 2026-10-09
+- **Raised by:** Dev B (v2 phase P2)
+- **Doc affected:** docs/05 (states, stateId columns), 06 (GET /states, stateId on gov reads and role grants, state:<id> room), 08 (state scope), 12 (GPS box per state), 13 (rooms, map view), 19 (AP state, `--with-tg`), 18 (G15), 04 (Next 16.3.8 housekeeping)
+- **Problem:** District was the top level and AP was hardcoded (GPS box, map centre, time zone literals, the single `state` room, gov breadcrumb). A second state needed a rebuild.
+- **Decision:**
+  - Network is State > District > Depot > Route > Bus > Trip. New `states` table (code, names, timezone, codePrefix, bounds, centre, zoom, isActive). `districts.stateId` required; `user_roles.stateId`, `pass_types.stateId` (null = every state) and `daily_stats.stateId` nullable. Two migrations: `20261009000000_states` (table and nullable columns), `20261009000100_states_backfill_ap` (AP with the fixed id `stateap000000000000000000`, backfill, then districts.stateId NOT NULL). No enum change.
+  - Scope: SUPER_ADMIN is the only platform wide role. STATE_ADMIN and TRANSPORT_OFFICER see their state (`depot.district.stateId`); without a stateId they see nothing. `depotScopeWhere`, `isPlatformWide`, `wholeStates` and `ScopeService.assertStateAccess / assertDistrictAccess / assertDepotAccess` (now async, state aware) are the one implementation; ops, tracking, gov, analytics, reports, feedback and admin all use them. A STATE_ADMIN grants roles only inside their state. Complaints without a depot have no place: state and platform roles see them, and they count in every state row.
+  - Sockets: the `state` room is now `state:{id}`; the trip's state comes from route > depot > district (cached 5 min per district in TripContextService). Web and API must deploy together.
+  - GPS trust box is the trip's state bounds plus 0.5 degrees longitude and 0.45 latitude (the old AP box exactly).
+  - `GET /states` (public). The plan said `/network/states`; network endpoints live at the root (`/districts`), so it is `/states`. The web called `/network/districts` (a 404, so breadcrumbs showed "District"); fixed to `/districts`.
+  - `/gov/overview` and `/gov/map` take `stateId?` (403 outside the caller's scope). Rollups write one state row per active state and stateId on every row. `/gov` shows a state picker for SUPER_ADMIN; `/gov/state/[id]` is one state's command center; the breadcrumb root is the state name from the API. Maps take `bounds` (state from the API, AP as the fallback).
+  - `PLATFORM_TIME_ZONE = "Asia/Kolkata"` in packages/shared time.ts; no other literal in code (SQL uses it through `Prisma.raw` or a parameter). `State.timezone` must equal it until per state zones exist (backlog). There is no admin screen for states yet (states arrive by migration or seed); whoever builds one must refuse a different zone.
+  - The `APT-` ticket and `APT1` QR prefixes stay platform wide. Generic copy no longer says "Andhra Pradesh" (app description, admin stops, gov map legend); free travel copy keeps it because the scheme is AP's.
+  - Seed: AP state row; `pnpm db:seed --with-tg` adds a Telangana stub (2 districts, bus stands, depots, `admin.tg@aptransit.test`).
+  - Test note: the plan's "TG point rejected for an AP trip" cannot hold with real bounds, because AP's rectangle contains all of Telangana. The test instead checks a Hyderabad point accepted for TG, and Visakhapatnam and Tirupati accepted for AP but rejected for TG.
+  - Housekeeping: docs/04 now lists Next 16.3.8 (advisory GHSA-cjq9-62q9-8jv4, already on main).
+- **Status:** Proposed for the other dev review. Docs updated in the same PR (P2).
+
 ## Parked (ideas outside the 20 day scope)
 
 | Idea | Raised by | Plan sec |

@@ -47,7 +47,7 @@ Auth column: `public`, `user` (any logged in), or role names from [08](08-roles-
 | POST | /auth/otp/verify | public | `{ channel, target, code }` | `{ accessToken, user: MeDto }` + sets `apt_rt` | 3 |
 | POST | /auth/refresh | cookie | | `{ accessToken }` + rotates `apt_rt` | 3 |
 | POST | /auth/logout | cookie | | 204, revokes token family | 3 |
-| GET | /me | user | | `MeDto { id, name, email, phone (masked), preferredLocale, roles: [{ role, depotId, districtId }] }` | 3 |
+| GET | /me | user | | `MeDto { id, name, email, phone (masked), preferredLocale, roles: [{ role, depotId, districtId, stateId }] }` | 3 |
 | PATCH | /me | user | `{ name?, preferredLocale? }` | `MeDto` | 3 |
 
 ### Network, search, timetable (public)
@@ -55,7 +55,8 @@ Auth column: `public`, `user` (any logged in), or role names from [08](08-roles-
 | Method | Path | Query | Returns | Day |
 | --- | --- | --- | --- | --- |
 | GET | /places/search | `q` (min 2 chars), `limit` | `[{ id, kind: STOP or BUS_STAND, nameEn, nameTe, districtNameEn, districtNameTe }]` | 4 |
-| GET | /districts | | `[{ id, code, nameEn, nameTe, busStandCount }]` | 4 |
+| GET | /states | | `[{ id, code, nameEn, nameTe, center: { lat, lng }, bounds: [minLng, minLat, maxLng, maxLat], zoom }]` active states (D-034) | v2 P2 |
+| GET | /districts | | `[{ id, code, nameEn, nameTe, stateId, busStandCount }]` | 4 |
 | GET | /districts/:id/bus-stands | | `[{ id, nameEn, nameTe, routeCount }]` | 4 |
 | GET | /bus-stands/:id/routes | | `[{ id, code, nameEn, nameTe, destination, serviceTypes[] }]` | 4 |
 | GET | /routes/:id | | `RouteDto` with ordered stops | 4 |
@@ -171,7 +172,7 @@ All scoped to the caller's depot unless the caller has a district or state role.
 | GET, POST, PATCH, DELETE | /admin/timetables, /admin/timetables/:id | timetables (delete = deactivate) | 14 |
 | POST | /admin/trips/generate `{ from, to }` | generated trip count | 14 |
 | GET | /admin/users `q?, role?` | users with roles | 14 |
-| POST, DELETE | /admin/users/:id/roles, /admin/users/:id/roles/:roleId | roles | 14 |
+| POST, DELETE | /admin/users/:id/roles, /admin/users/:id/roles/:roleId | roles. POST body `{ role, depotId?, districtId?, stateId? }`: state roles need `stateId`; a STATE_ADMIN grants only inside their state (D-034) | 14 |
 | GET, PUT | /admin/fare-rules, /admin/refund-policies, /admin/settings | policy rows | 14 |
 | GET | /admin/audit-logs `entityType?, entityId?, actorId?, from?, to?` | paginated audit rows | 14 |
 | GET | /admin/jobs/failed | last 50 failed background jobs with queue, name, reason, attempts, failedAt (STATE_ADMIN and up) | 18 |
@@ -180,8 +181,8 @@ All scoped to the caller's depot unless the caller has a district or state role.
 
 | Method | Path | Query | Returns | Day |
 | --- | --- | --- | --- | --- |
-| GET | /gov/overview | `date?` | `{ activeBuses, activeTrips, passengersToday, delayedTrips, openIncidents, onTimePct, ticketsToday, revenueTodayPaise }` | 15 |
-| GET | /gov/map | | `{ districts: [{ id, activeBuses, delayed, incidents }], buses: LiveBusDto[], incidents: IncidentDto[] }` | 15 |
+| GET | /gov/overview | `date?, stateId?` (one state of the caller's scope; 403 outside it, D-034) | `{ activeBuses, activeTrips, passengersToday, delayedTrips, openIncidents, onTimePct, ticketsToday, revenueTodayPaise }` | 15 |
+| GET | /gov/map | `stateId?` | `{ districts: [{ id, activeBuses, delayed, incidents }], buses: LiveBusDto[], incidents: IncidentDto[] }` | 15 |
 | GET | /gov/districts/:id, /gov/depots/:id, /gov/routes/:id | `date?` | drill down summary for that level (sec 36) | 15 |
 | GET | /analytics/routes | `from, to, districtId?` | per route: passengers, trips, loadFactorPct, avgDelayMin, cancellations, revenuePaise | 15 |
 | GET | /analytics/buses | `from, to, depotId?` | per bus: trips, km, utilisationPct, downtimeHours | 15 |
@@ -204,18 +205,18 @@ Namespace `/live`. Connect with `io(WS_URL + '/live', { auth: { token } })`. Tok
 
 | Client emits | Payload | Server check |
 | --- | --- | --- |
-| `subscribe` | `{ room }` | `trip:<id>`, `route:<id>` public. `depot:<id>` needs a role scoped to that depot. `district:<id>` and `state` need DISTRICT_OFFICER and up |
+| `subscribe` | `{ room }` | `trip:<id>`, `route:<id>` public. `depot:<id>` needs a role scoped to that depot. `district:<id>` needs that district, its state or SUPER_ADMIN. `state:<id>` needs a state role on that state or SUPER_ADMIN (D-034) |
 | `unsubscribe` | `{ room }` | |
 
 Authenticated sockets auto join `user:<userId>`.
 
 | Server emits | Room | Payload |
 | --- | --- | --- |
-| `bus:position` | trip, route, depot, district, state | `{ tripId, busId, lat, lng, speedKmh, headingDeg, recordedAt, nextStopId, etaNextStopSec, delayMinutes, progressPct }` |
-| `trip:status` | trip, depot, district, state | `{ tripId, status, displayStatus, delayMinutes, lastStopSeq }` |
-| `incident:new`, `incident:update` | trip, depot, district, state | `IncidentDto` |
+| `bus:position` | trip, route, depot, district, `state:<id>` | `{ tripId, busId, lat, lng, speedKmh, headingDeg, recordedAt, nextStopId, etaNextStopSec, delayMinutes, progressPct }` |
+| `trip:status` | trip, depot, district, `state:<id>` | `{ tripId, status, displayStatus, delayMinutes, lastStopSeq }` |
+| `incident:new`, `incident:update` | trip, depot, district, `state:<id>` | `IncidentDto` |
 | `notification:new` | user | `NotificationDto` |
 | `ticket:status` | user | `{ ticketId, status }` |
-| `kpi:update` | depot, state | `{ scope, values }` every 15 s |
+| `kpi:update` | depot, `state:<id>` | `{ scope, values }` every 15 s |
 
 Throttle: at most one `bus:position` per trip per 2 s per room.
