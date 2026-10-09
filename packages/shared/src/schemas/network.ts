@@ -28,7 +28,7 @@ export const PlaceDto = z.object({
 export type PlaceDto = z.infer<typeof PlaceDto>;
 export const PlacesSearchResponse = z.array(PlaceDto);
 
-/** GET /network/states (D-034): a state with its map view. Bounds are [minLng, minLat, maxLng, maxLat]. */
+/** GET /states (D-034): a state with its map view. Bounds are [minLng, minLat, maxLng, maxLat]. */
 export const StateDto = z.object({
   id: z.string(),
   code: z.string(),
