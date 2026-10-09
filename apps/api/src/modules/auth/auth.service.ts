@@ -119,22 +119,29 @@ export class AuthService {
       },
     });
 
+    const otpDevEcho = this.config.get("OTP_DEV_ECHO", { infer: true });
+    const appEnv = this.config.get("APP_ENV", { infer: true });
+    const devCode = otpDevEcho && appEnv !== "production" ? code : undefined;
+
     if (input.channel === "EMAIL") {
-      await this.emailProvider.sendEmail(
-        target,
-        "Your AP TransitOS login code",
-        `Your login code is ${code}. It is valid for 5 minutes. Never share this code with anyone.`,
-      );
+      try {
+        await this.emailProvider.sendEmail(
+          target,
+          "Your AP TransitOS login code",
+          `Your login code is ${code}. It is valid for 5 minutes. Never share this code with anyone.`,
+        );
+      } catch (err) {
+        // With OTP_DEV_ECHO (never in production) the screen shows the code, so a failed email
+        // does not block test logins while the sender domain is being set up.
+        if (!(devCode && err instanceof AppError && err.code === "EMAIL_DELIVERY_FAILED")) throw err;
+        this.logger.warn("Login email not delivered; the test code is shown on screen (OTP_DEV_ECHO)");
+      }
     } else if (this.isDevelopment) {
       // No SMS provider yet (docs/18). Development only: the code goes to the local log.
       this.logger.log(`[Dev SMS] ${maskPhone(target)} code ${code}`);
     } else {
       this.logger.warn("SMS OTP requested but no SMS provider is configured");
     }
-
-    const otpDevEcho = this.config.get("OTP_DEV_ECHO", { infer: true });
-    const appEnv = this.config.get("APP_ENV", { infer: true });
-    const devCode = otpDevEcho && appEnv !== "production" ? code : undefined;
 
     return {
       expiresInSec: OTP_TTL_SEC,
