@@ -4,6 +4,15 @@ Newest day on top. Each dev adds their own block at the end of every day using `
 
 Severity: **S1** blocks the demo (fix today), **S2** wrong behaviour (fix this week), **S3** polish (known issues list).
 
+## 2026-10-09, login email error (Dev B, branch b/email-delivery-error)
+
+**Done**
+- `EMAIL_DELIVERY_FAILED` (503) replaces the 500 when Resend refuses or cannot be reached; en and te messages; with `OTP_DEV_ECHO` (never production) the test code still lets testers log in. docs/06 and D-041.
+- Tests: `apps/api/src/modules/auth/email-delivery.test.ts` (refused send, network failure, EMAIL_FROM used, 503 without echo, never echo in production, echo fallback, other errors not hidden). API 426 passed (6 database tests skipped), shared 121; lint, i18n, dashes, check:endpoints pass.
+
+**Blockers or questions for the other dev**
+- Real Gmail delivery still needs the owner's Resend domain verification and Render env (`EMAIL_FROM`, `APP_ENV=staging`, then `OTP_DEV_ECHO=0`).
+
 ## Day 19: 2026-10-08, release checks (local and Neon)
 
 **Done**

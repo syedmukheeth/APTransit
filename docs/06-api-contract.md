@@ -30,9 +30,9 @@
 ```
 
 - `code` is a stable UPPER_SNAKE value from `packages/shared/src/errors.ts`. The web app shows `t('errors.' + code)`, never `message`.
-- HTTP status: 400 validation, 401 no or bad token, 403 role or scope, 404 not found, 409 state conflict, 410 expired, 422 business rule, 429 rate limit, 500 server.
+- HTTP status: 400 validation, 401 no or bad token, 403 role or scope, 404 not found, 409 state conflict, 410 expired, 422 business rule, 429 rate limit, 500 server, 503 outside service unavailable (email; D-041).
 
-Core error codes: `VALIDATION_FAILED, UNAUTHENTICATED, FORBIDDEN, NOT_FOUND, RATE_LIMITED, OTP_INVALID, OTP_EXPIRED, OTP_TOO_MANY_ATTEMPTS, SEAT_TAKEN, HOLD_EXPIRED, BOOKING_NOT_PAYABLE, PAYMENT_SIGNATURE_INVALID, PAYMENT_AMOUNT_MISMATCH, TICKET_NOT_ACTIVATABLE, TICKET_ALREADY_ACTIVE, ACTIVATION_WINDOW_CLOSED, TICKET_NOT_CANCELLABLE, TICKET_NOT_GIFTABLE, RECIPIENT_NOT_FOUND, GIFT_TO_SELF, PASS_NOT_ELIGIBLE, PASS_ALREADY_ACTIVE, ELIGIBILITY_REQUIRED, DEVICE_NOT_APPROVED, TRIP_NOT_ASSIGNED, TRIP_NOT_STARTABLE, BUS_NOT_AVAILABLE, INTERNAL`.
+Core error codes: `VALIDATION_FAILED, UNAUTHENTICATED, FORBIDDEN, NOT_FOUND, RATE_LIMITED, OTP_INVALID, OTP_EXPIRED, OTP_TOO_MANY_ATTEMPTS, SEAT_TAKEN, HOLD_EXPIRED, BOOKING_NOT_PAYABLE, PAYMENT_SIGNATURE_INVALID, PAYMENT_AMOUNT_MISMATCH, TICKET_NOT_ACTIVATABLE, TICKET_ALREADY_ACTIVE, ACTIVATION_WINDOW_CLOSED, TICKET_NOT_CANCELLABLE, TICKET_NOT_GIFTABLE, RECIPIENT_NOT_FOUND, GIFT_TO_SELF, PASS_NOT_ELIGIBLE, PASS_ALREADY_ACTIVE, ELIGIBILITY_REQUIRED, DEVICE_NOT_APPROVED, TRIP_NOT_ASSIGNED, TRIP_NOT_STARTABLE, BUS_NOT_AVAILABLE, EMAIL_DELIVERY_FAILED (503, D-041), INTERNAL`.
 
 ## Endpoints
 
@@ -43,7 +43,7 @@ Auth column: `public`, `user` (any logged in), or role names from [08](08-roles-
 | Method | Path | Auth | Body or query | Returns | Day |
 | --- | --- | --- | --- | --- | --- |
 | GET | /health | public | | `{ status, db, redis, version, time }`. HTTP 200 when db and redis are ok, 503 when degraded (decision D-006) | 1 |
-| POST | /auth/otp/request | public | `{ channel: EMAIL or PHONE, target }` | 202 `{ expiresInSec: 300, resendInSec: 30 }`. Dev only: `devCode` when `OTP_DEV_ECHO=1` | 3 |
+| POST | /auth/otp/request | public | `{ channel: EMAIL or PHONE, target }` | 202 `{ expiresInSec: 300, resendInSec: 30 }`. Dev only: `devCode` when `OTP_DEV_ECHO=1` (then a failed email still answers 202). Email not sent: 503 `EMAIL_DELIVERY_FAILED` (D-041) | 3 |
 | POST | /auth/otp/verify | public | `{ channel, target, code }` | `{ accessToken, user: MeDto }` + sets `apt_rt` | 3 |
 | POST | /auth/refresh | cookie | | `{ accessToken }` + rotates `apt_rt` | 3 |
 | POST | /auth/logout | cookie | | 204, revokes token family | 3 |

@@ -293,6 +293,18 @@ The only way to change a locked doc in `docs/`. Add an entry, agree at the daily
   - Two small deviations from the spec: the scan result auto reset is a draining bar (transform only) instead of a ring, because the spec limits motion to transform and opacity; the dialog max width stays `max-w-lg` (512 px) instead of 480 px, to avoid an arbitrary value.
 - **Status:** Proposed for the other dev review. docs/09 updated in the same PR (P1).
 
+### D-041: Login email failure answers 503 EMAIL_DELIVERY_FAILED
+- **Date:** 2026-10-09
+- **Raised by:** Dev B (v2 plan, section 1 "Login")
+- **Doc affected:** docs/06 (status rules, error codes, POST /auth/otp/request)
+- **Problem:** when Resend refuses a login email (the `onboarding@resend.dev` test sender only reaches the Resend account owner, so most Gmail addresses fail), the API answered 500 INTERNAL and the screen said "something went wrong".
+- **Decision:**
+  - New error code `EMAIL_DELIVERY_FAILED` with HTTP 503 (an outside service is unavailable, try again). Messages in both web files; the login form shows it through the existing `errors.<CODE>` lookup. Logs keep the Resend status only, never the body or the address.
+  - With `OTP_DEV_ECHO` on (never in production) a failed email does not block login: the request answers 202 with `devCode`, the screen shows the test code, and a warning is logged. Other errors are never hidden.
+  - Numbered D-041 because D-034 to D-040 are reserved for the v2 phases in prompts/v2-journey-plan.md.
+  - Still needed outside the code (owner's accounts): verify a sending domain in Resend, set `EMAIL_FROM` on that domain and `APP_ENV=staging` on Render, then `OTP_DEV_ECHO=0`.
+- **Status:** Proposed for the other dev review.
+
 ## Parked (ideas outside the 20 day scope)
 
 | Idea | Raised by | Plan sec |
