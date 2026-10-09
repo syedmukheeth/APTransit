@@ -25,7 +25,7 @@ Work follows `prompts/v2-journey-plan.md`. P1 (minimal UI, D-033) is on main. P2
 - Socket room `state:{id}` (the bare `state` room is refused). `LiveRooms` and `TripContext` carry the state; web and API deploy together.
 - `PLATFORM_TIME_ZONE` from `@aptransit/shared` everywhere; `rg "Asia/Kolkata" apps packages --glob "!**/generated/**"` should only hit time.ts, schema.prisma defaults, migrations, env and CI config, test names, and `scripts/load/search.ts` (root scripts cannot import the shared package).
 - `GET /states` (public) feeds the gov state picker, `/gov/state/[id]`, the breadcrumb root and map `bounds` (MapView, GovMap, OpsMap take `bounds`).
-- Checks on this branch: API 434 tests (6 database tests skipped), shared 125, ui 106, web 44; lint, typecheck, i18n, dashes, check:endpoints pass. Migrations tested as an upgrade on a seeded local database (PGlite): no drift, backfill verified.
+- Checks on this branch: API 434 tests (6 database tests skipped), shared 125, ui 106, web 44; lint, typecheck, i18n, dashes, check:endpoints pass. E2E Desktop Chrome 22 of 22, Pixel 7 22 of 22. Migrations tested as an upgrade on a seeded local database (PGlite): no drift, backfill verified.
 
 **P2 gotchas**
 
@@ -36,7 +36,7 @@ Work follows `prompts/v2-journey-plan.md`. P1 (minimal UI, D-033) is on main. P2
 | `pnpm test` in apps/api times out on a slow laptop | All files in parallel | `pnpm exec vitest run --maxWorkers=2` |
 | `next dev` answered 404 for every page during the P2 check (Windows, "slow filesystem" warning) | Not found; the production build of the same code works | Use `pnpm --filter web build` and `start` for browser checks |
 | Local API logs "Connection terminated unexpectedly" and health says db down | PGlite socket server allows `--max-connections` (was 10); `nest start --watch` restarts leak pool connections | Start PGlite with `--max-connections=20` and run the API from `dist` (`node apps/api/dist/main.js`) |
-| `operations.spec.ts` fails at the bilingual loop on a slow laptop | The 5 s expect timeout; the page is still loading | Passes with a 20 s expect timeout; check CI before changing the spec |
+| `operations.spec.ts` sometimes fails at the bilingual loop on a slow laptop | The 5 s expect timeout while the page is still loading | Rerun; it passed in the full runs on both projects |
 | Map stays on AP for a TG user for a moment | Bounds arrive with `GET /states` | Expected; maps remount when the bounds change |
 
 ## Previous state (Days 15 to 20 code done and tested, 2026-10-08)

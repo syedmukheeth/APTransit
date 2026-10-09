@@ -17,7 +17,7 @@ Severity: **S1** blocks the demo (fix today), **S2** wrong behaviour (fix this w
 - Unit: API 434 passed, 6 database tests skipped (`vitest run --maxWorkers=2`; full parallel times out on this laptop), shared 125, ui 106, web 44. Lint, typecheck, i18n, dashes, check:endpoints, check:classes pass. Web production build passes.
 - HTTP on the local stack with `--with-tg`: transport@ sees 6 AP depots and gets 403 for the TG overview; admin.tg@ sees the 2 TG depots and gets 403 for AP; root@ sees both states.
 - Browser (production build): root sees the state picker, Telangana opens with its own map and districts, breadcrumb All states > Telangana > Hyderabad; Telugu names render.
-- E2E on Desktop Chrome: E2E-10, E2E-7, E2E-9 and the route sweep (now with `/gov/state/<AP id>`) pass. `operations.spec.ts` failed twice at its 5 s heading wait in the Telugu loop on this laptop and passed with a 20 s expect timeout. Pixel 7 and the other specs not run today.
+- Full E2E on the local stack (production builds, `--workers=1`): Desktop Chrome 22 of 22, Pixel 7 22 of 22, route sweep now with `/gov/state/<AP id>`. Reruns were needed only where the OTP limit (10 per IP per hour) ran out late in a run and once for E2E-3 landing on the login page; all passed after clearing the local Redis counters. Earlier `operations.spec.ts` timed out at its 5 s heading wait on this laptop; it passed in the full runs.
 
 **Contract changes (packages/shared)**
 - `PLATFORM_TIME_ZONE`, `StateDto`, `StatesResponse`, `DistrictDto.stateId`, `UserRoleDto.stateId`, `GrantRoleInput.stateId` (required for state roles), `AdminRoleDto.stateId`, `GovStateQuery`, `STATE_SCOPED_ROLES`, `LiveRoom` accepts `state:<id>` instead of `state`. Needs Dev A review.
