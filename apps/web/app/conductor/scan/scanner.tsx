@@ -200,15 +200,21 @@ export function ConductorScanner() {
       />
     );
   const context = result?.context;
+  // D-035: the ticket's own stop for the segment reasons
+  const segmentStop =
+    result?.reason === "PAST_DESTINATION" ? context?.ticketTo : result?.reason === "BEFORE_BOARDING_STOP" ? context?.ticketFrom : undefined;
   const helpers = {
     time:
       result?.reason === "ALREADY_SCANNED" && result.earlierScanAt
         ? formatTime(result.earlierScanAt, locale)
         : result?.reason === "WRONG_TRIP" && context?.departureAt
           ? formatTime(context.departureAt, locale)
-          : context?.validUntil
-            ? formatTime(context.validUntil, locale)
-            : t("unavailable"),
+          : result?.reason === "NOT_YET_VALID" && context?.validFrom
+            ? formatTime(context.validFrom, locale)
+            : context?.validUntil
+              ? formatTime(context.validUntil, locale)
+              : t("unavailable"),
+    stop: segmentStop ? (locale === "te" ? segmentStop.nameTe : segmentStop.nameEn) : t("unavailable"),
     route: context?.route ?? t("unavailable"),
     date: context?.serviceDate ? formatDate(context.serviceDate, locale) : t("unavailable"),
     services:

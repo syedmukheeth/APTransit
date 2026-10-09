@@ -235,7 +235,11 @@
       "STALE_CODE": "INVALID: old QR code",
       "BAD_SIGNATURE": "INVALID: not recognised",
       "NOT_FOUND": "INVALID: not recognised",
-      "SERVICE_NOT_ELIGIBLE": "INVALID: not valid on this bus"
+      "SERVICE_NOT_ELIGIBLE": "INVALID: not valid on this bus",
+      "PAST_DESTINATION": "INVALID: past destination",
+      "BEFORE_BOARDING_STOP": "INVALID: before boarding stop",
+      "NOT_YET_VALID": "INVALID: not valid yet",
+      "ROUTE_NOT_COVERED": "INVALID: route not covered"
     }
   },
   "auth": {
@@ -958,6 +962,22 @@
       "SERVICE_NOT_ELIGIBLE": {
         "line": "Not valid on this bus",
         "helper": "Pass works on {services}"
+      },
+      "PAST_DESTINATION": {
+        "line": "Past destination",
+        "helper": "This ticket ends at {stop}"
+      },
+      "BEFORE_BOARDING_STOP": {
+        "line": "Too early to board",
+        "helper": "This ticket starts at {stop}"
+      },
+      "NOT_YET_VALID": {
+        "line": "Not valid yet",
+        "helper": "Valid from {time}"
+      },
+      "ROUTE_NOT_COVERED": {
+        "line": "Not valid on this route",
+        "helper": "This pass does not cover this route"
       }
     }
   },
