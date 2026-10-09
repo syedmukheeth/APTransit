@@ -119,6 +119,23 @@ enum ScanReason {
   WRONG_TRIP
   WRONG_DATE
   SERVICE_NOT_ELIGIBLE
+  PAST_DESTINATION
+  BEFORE_BOARDING_STOP
+  NOT_YET_VALID
+  ROUTE_NOT_COVERED
+}
+
+/// Who verified a boarding (D-035). Door scanners arrive in P5.
+enum ValidatorKind {
+  CONDUCTOR
+  DOOR_SCANNER
+}
+
+/// Where the boarding stop came from (D-035). NONE skips every stop check.
+enum StopSource {
+  BUS_GPS
+  DEVICE_GPS
+  NONE
 }
 
 enum IncidentType {
@@ -293,7 +310,8 @@ model Device {
   revokedAt     DateTime?
   createdAt     DateTime  @default(now())
 
-  user User @relation(fields: [userId], references: [id], onDelete: Cascade)
+  user  User         @relation(fields: [userId], references: [id], onDelete: Cascade)
+  scans TicketScan[]
 
   @@map("devices")
 }
@@ -409,6 +427,7 @@ model Stop {
   droppingBookings    Booking[]   @relation("DroppingStop")
   boardingTickets     Ticket[]    @relation("TicketBoardingStop")
   droppingTickets     Ticket[]    @relation("TicketDroppingStop")
+  scans               TicketScan[]
 
   @@index([nameEn])
   @@index([nameTe])
@@ -518,6 +537,7 @@ model Bus {
   tripAssignments    TripAssignment[]
   gpsLocations       GpsLocation[]
   incidents          Incident[]
+  scans              TicketScan[]
 
   @@map("buses")
 }
@@ -763,27 +783,41 @@ model Ticket {
   @@map("tickets")
 }
 
+/// Every scan attempt; a VALID one is the boarding record (D-035).
 model TicketScan {
-  id          String     @id @default(cuid(2))
-  ticketId    String?
-  passId      String?
-  tripId      String
-  conductorId String
-  result      ScanResult
-  reason      ScanReason
-  scannedAt   DateTime   @default(now())
-  deviceTime  DateTime?
-  offline     Boolean    @default(false)
-  createdAt   DateTime   @default(now())
+  id            String        @id @default(cuid(2))
+  ticketId      String?
+  passId        String?
+  tripId        String
+  /// Null when a door scanner verified the boarding (P5)
+  conductorId   String?
+  result        ScanResult
+  reason        ScanReason
+  scannedAt     DateTime      @default(now())
+  deviceTime    DateTime?
+  offline       Boolean       @default(false)
+  busId         String?
+  stopId        String?
+  stopSource    StopSource    @default(NONE)
+  lat           Float?
+  lng           Float?
+  deviceId      String?
+  validatorKind ValidatorKind @default(CONDUCTOR)
+  createdAt     DateTime      @default(now())
 
-  ticket    Ticket?   @relation(fields: [ticketId], references: [id])
-  pass      Pass?     @relation(fields: [passId], references: [id])
-  trip      Trip      @relation(fields: [tripId], references: [id])
-  conductor Conductor @relation(fields: [conductorId], references: [id])
+  ticket    Ticket?    @relation(fields: [ticketId], references: [id])
+  pass      Pass?      @relation(fields: [passId], references: [id])
+  trip      Trip       @relation(fields: [tripId], references: [id])
+  conductor Conductor? @relation(fields: [conductorId], references: [id])
+  bus       Bus?       @relation(fields: [busId], references: [id])
+  stop      Stop?      @relation(fields: [stopId], references: [id])
+  device    Device?    @relation(fields: [deviceId], references: [id])
 
   @@index([tripId, scannedAt])
   @@index([ticketId])
   @@index([passId])
+  @@index([stopId, scannedAt])
+  @@index([busId, scannedAt])
   @@map("ticket_scans")
 }
 

@@ -44,8 +44,25 @@ export class ConductorService {
       select: {
         tripId: true,
         conductorId: true,
+        busId: true,
         bus: { select: { busType: { select: { serviceType: true } } } },
-        trip: { select: { status: true, route: { select: { nameEn: true } } } },
+        trip: {
+          select: {
+            status: true,
+            lastStopSeq: true,
+            route: {
+              select: {
+                nameEn: true,
+                depot: { select: { districtId: true } },
+                // D-035: the stops of the route, for the boarding stop and the segment checks
+                routeStops: {
+                  orderBy: { seq: "asc" },
+                  select: { stopId: true, seq: true, stop: { select: { lat: true, lng: true, nameEn: true, nameTe: true } } },
+                },
+              },
+            },
+          },
+        },
       },
       orderBy: { trip: { scheduledDepartureAt: "asc" } },
     });
