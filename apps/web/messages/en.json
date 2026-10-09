@@ -309,6 +309,7 @@
     "BUS_NOT_AVAILABLE": "Selected bus is not available.",
     "COMPLAINT_STATUS_INVALID": "This status change is not allowed. Move the complaint one step at a time.",
     "NETWORK": "You are offline. Your tickets still open. We will retry when you are back online.",
+    "EMAIL_DELIVERY_FAILED": "We could not send the code by email. Try again in a few minutes.",
     "INTERNAL": "Something went wrong on our side. Try again in a moment.",
     "BAD_RESPONSE": "We got an answer we did not understand. Try again in a moment."
   },
