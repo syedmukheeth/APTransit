@@ -14,9 +14,9 @@ Read order for a new session:
 
 ---
 
-## Current state (v2 P2 state model, branch `b/state-model`, 2026-10-09)
+## Current state (v2 P2 state model and login email error on main, 2026-10-09)
 
-Work follows `prompts/v2-journey-plan.md`. P1 (minimal UI, D-033) is on main. P2 (State > District, multi state scope, D-034) is on `b/state-model`, PR to main pending the other dev's review. Next: P3 (boarding record and segment validation), which depends on P2.
+Work follows `prompts/v2-journey-plan.md`. P1 (minimal UI, D-033) is on main. P2 (State > District, multi state scope, D-034) and the login email error (503 `EMAIL_DELIVERY_FAILED`, D-041) were pushed straight to main on 2026-10-09 at the owner's request, without a PR; the other dev should still review D-034 and D-041 (shared contract changes). Run `pnpm --filter api exec prisma migrate deploy` on every database (two new migrations). Real Gmail login still needs a verified Resend domain, `EMAIL_FROM` and `APP_ENV=staging` on Render, then `OTP_DEV_ECHO=0`. Next: P3 (boarding record and segment validation).
 
 **What P2 changed (patterns to copy)**
 
