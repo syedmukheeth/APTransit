@@ -29,7 +29,9 @@
 | PassKind | WEEKLY, MONTHLY, FREE_TRAVEL |
 | PassStatus | PENDING_PAYMENT, READY, ACTIVE, EXPIRED, CANCELLED |
 | ScanResult | VALID, INVALID |
-| ScanReason | OK, NOT_FOUND, BAD_SIGNATURE, STALE_CODE, NOT_ACTIVATED, ALREADY_SCANNED, EXPIRED, CANCELLED, WRONG_TRIP, WRONG_DATE, SERVICE_NOT_ELIGIBLE |
+| ScanReason | OK, NOT_FOUND, BAD_SIGNATURE, STALE_CODE, NOT_ACTIVATED, ALREADY_SCANNED, EXPIRED, CANCELLED, WRONG_TRIP, WRONG_DATE, SERVICE_NOT_ELIGIBLE, PAST_DESTINATION, BEFORE_BOARDING_STOP, NOT_YET_VALID, ROUTE_NOT_COVERED (last four D-035) |
+| ValidatorKind | CONDUCTOR, DOOR_SCANNER (D-035) |
+| StopSource | BUS_GPS, DEVICE_GPS, NONE (D-035) |
 | IncidentType | BREAKDOWN, ACCIDENT, TRAFFIC, ROAD_BLOCK, BUS_PROBLEM, MEDICAL, DELAY, OTHER |
 | IncidentStatus | OPEN, ACKNOWLEDGED, RESOLVED |
 | Severity | LOW, MEDIUM, HIGH, CRITICAL |
@@ -94,7 +96,7 @@ The network is State > District > Depot > Route > Bus > Trip (D-034). A new stat
 | bookings | id, code, userId, tripId, boardingStopId, droppingStopId, status, totalPaise, holdExpiresAt, createdAt, updatedAt | |
 | booking_passengers | id, bookingId, name, age, gender (`F`, `M`, `X`), seatNo | Gender only for seat rules and free travel, never shown to other users |
 | tickets | id, code, bookingId?, passengerId?, type, status, holderUserId, originalUserId, tripId, routeId, boardingStopId, droppingStopId, seatNo?, farePaise, activatedAt?, validUntil?, scannedAt?, usedAt?, expiresAt, qrSecret (encrypted), giftable, transferCount, version, createdAt, updatedAt | `version` for optimistic locking on every status change. See [07](07-ticket-and-pass-rules.md) |
-| ticket_scans | id, ticketId?, passId?, tripId, conductorId, result, reason, scannedAt, deviceTime?, offline | Every scan attempt is saved, valid or not |
+| ticket_scans | id, ticketId?, passId?, tripId, conductorId?, result, reason, scannedAt, deviceTime?, offline, busId?, stopId?, stopSource (default NONE), lat?, lng?, deviceId?, validatorKind (default CONDUCTOR) | Every scan attempt is saved, valid or not. A VALID row is the boarding record: bus, stop, time, location and who or what verified it (D-035). conductorId is null for a door scanner (P5). Indexes (stopId, scannedAt), (busId, scannedAt). Old rows were backfilled with CONDUCTOR and the bus assigned at scan time |
 | ticket_transfers | id, ticketId, fromUserId, toUserId, createdAt | Only successful transfers are rows. Failed attempts are in audit_logs |
 
 ### Passes and money

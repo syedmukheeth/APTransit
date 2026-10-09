@@ -205,3 +205,15 @@ For a native Telugu speaker (docs/18 item I1). Please read each line in context 
 | packages/shared/src/messages | email.complaint.status.IN_REVIEW | In review | పరిశీలనలో ఉంది | |
 | packages/shared/src/messages | email.complaint.status.RESOLVED | Resolved | పరిష్కరించబడింది | |
 | packages/shared/src/messages | email.complaint.status.CLOSED | Closed | మూసివేయబడింది | |
+| apps/web/messages | scan.reasons.PAST_DESTINATION | INVALID: past destination | చెల్లదు: గమ్యం దాటింది | v2 P3 |
+| apps/web/messages | conductorApp.reasons.PAST_DESTINATION.line | Past destination | గమ్యం దాటింది | v2 P3 |
+| apps/web/messages | conductorApp.reasons.PAST_DESTINATION.helper | This ticket ends at {stop} | ఈ టికెట్ {stop} వద్ద ముగుస్తుంది | v2 P3 |
+| apps/web/messages | scan.reasons.BEFORE_BOARDING_STOP | INVALID: before boarding stop | చెల్లదు: ఎక్కే స్టాప్ కంటే ముందు | v2 P3 |
+| apps/web/messages | conductorApp.reasons.BEFORE_BOARDING_STOP.line | Too early to board | ఎక్కడానికి ఇంకా సమయం కాలేదు | v2 P3 |
+| apps/web/messages | conductorApp.reasons.BEFORE_BOARDING_STOP.helper | This ticket starts at {stop} | ఈ టికెట్ {stop} నుండి మొదలవుతుంది | v2 P3 |
+| apps/web/messages | scan.reasons.NOT_YET_VALID | INVALID: not valid yet | చెల్లదు: ఇంకా చెల్లుబాటు కాలేదు | v2 P3 |
+| apps/web/messages | conductorApp.reasons.NOT_YET_VALID.line | Not valid yet | ఇంకా చెల్లుబాటు కాలేదు | v2 P3 |
+| apps/web/messages | conductorApp.reasons.NOT_YET_VALID.helper | Valid from {time} | {time} నుండి చెల్లుతుంది | v2 P3 |
+| apps/web/messages | scan.reasons.ROUTE_NOT_COVERED | INVALID: route not covered | చెల్లదు: ఈ మార్గానికి వర్తించదు | v2 P3 |
+| apps/web/messages | conductorApp.reasons.ROUTE_NOT_COVERED.line | Not valid on this route | ఈ మార్గంలో చెల్లదు | v2 P3 |
+| apps/web/messages | conductorApp.reasons.ROUTE_NOT_COVERED.helper | This pass does not cover this route | ఈ పాస్ ఈ మార్గానికి వర్తించదు | v2 P3 |

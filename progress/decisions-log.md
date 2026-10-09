@@ -312,6 +312,20 @@ The only way to change a locked doc in `docs/`. Add an entry, agree at the daily
   - Housekeeping: docs/04 now lists Next 16.3.8 (advisory GHSA-cjq9-62q9-8jv4, already on main).
 - **Status:** Proposed for the other dev review. Docs updated in the same PR (P2).
 
+### D-035: v2 boarding record and segment validation
+- **Date:** 2026-10-09
+- **Raised by:** Dev B (v2 phase P3)
+- **Doc affected:** docs/05 (ticket_scans, enums), 06 (POST /tickets/validate), 07 section 5
+- **Problem:** a scan stored only ticket, trip, conductor and result. No bus, stop, location or device, and no check that the passenger boards inside the ticket's segment.
+- **Decision:**
+  - `ticket_scans` gains busId, stopId, stopSource (BUS_GPS, DEVICE_GPS, NONE), lat, lng, deviceId and validatorKind (CONDUCTOR, DOOR_SCANNER); conductorId becomes optional for door scanners (P5). Indexes (stopId, scannedAt) and (busId, scannedAt). The four new ScanReason values ship in their own migration before anything uses them. Old rows were backfilled with CONDUCTOR and the bus assigned at scan time (26,438 of 26,438 local rows got a bus).
+  - One validation path: `ValidateService.validate(ctx: ValidatorContext, input, actor)`. The conductor endpoint builds the context from the running assignment (`validateAsConductor`); P5 builds it from the paired scanner.
+  - Boarding stop rule (pure `resolveBoardingStop`): bus GPS newer than 60 s, nearest route stop within 400 m with seq not past the next stop (BUS_GPS); else the device `position` inside the state box, bounded by the trip's last stop plus one (DEVICE_GPS); else NONE. NONE skips every stop check.
+  - New checks in docs/07 section 5 order: 10a PAST_DESTINATION (at or after the dropping stop), 10b BEFORE_BOARDING_STOP (more than 1 stop before the boarding stop), 10c NOT_YET_VALID (pass before validFrom), 11a ROUTE_NOT_COVERED (route restricted pass). 11a is wired but always passes until P4 adds route restricted passes.
+  - `ValidateTicketInput.position` (optional) and `context.boardingStop`, `ticketFrom`, `ticketTo`, `validFrom` in the result; scanner helpers say "This ticket ends at Nandyal". The conductor web app does not send its own position yet (it would need a location prompt; P5 and P6 decide).
+  - The plan also named SCAN_RESULT_MAP in status.ts: result level tone and icon are unchanged, so it was left as is; reasons are copy only.
+- **Status:** Proposed for the other dev review. Docs updated in the same change (P3).
+
 ### D-041: Login email failure answers 503 EMAIL_DELIVERY_FAILED
 - **Date:** 2026-10-09
 - **Raised by:** Dev B (v2 plan, section 1 "Login")

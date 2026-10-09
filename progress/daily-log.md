@@ -4,6 +4,16 @@ Newest day on top. Each dev adds their own block at the end of every day using `
 
 Severity: **S1** blocks the demo (fix today), **S2** wrong behaviour (fix this week), **S3** polish (known issues list).
 
+## v2 P3: 2026-10-09, boarding record and segment validation (Dev B)
+
+**Done**
+- Schema: ValidatorKind, StopSource, new ticket_scans fields, conductorId optional, two indexes; four ScanReason values in their own migration; backfill of validatorKind and busId (all 26,438 local scans got a bus). Applied as an upgrade to the local database; no schema drift.
+- ValidateService takes a ValidatorContext; the conductor path behaves as before. Pure `resolveBoardingStop` with table tests. scanStatusReason gains 10a, 10b, 10c and 11a in docs/07 order; stop checks skipped with source NONE. Every scan saves bus, stop, source, position, device and validator.
+- Shared: reasons, ValidatorKind, StopSource, ScanPosition, result context. en and te copy for the four reasons (Telugu added to progress/telugu-review.md), scanner helpers. Docs 05, 06, 07 section 5; D-035.
+
+**Checks**
+- Unit: API 465 passed (6 database tests skipped; those 6 also pass against the local Postgres with TEST_DATABASE_URL), shared 125, web 44; lint, typecheck, i18n, dashes, check:endpoints pass. E2E Desktop Chrome 22 of 22 and Pixel 7 22 of 22 (E2E-8 now counts reasons from the messages and checks "This ticket ends at Nandyal"; reruns only for the OTP limit and one E2E-3 login redirect). seed.test counts AP only, so it passes with the Telangana stub. New tests: boarding-stop.test.ts, segment order tests in scan-rules.test.ts, D-035 HTTP tests in day12-validation.test.ts (NONE still boards, bus GPS stop saved, Kurnool to Nandyal ticket at Nandyal gives PAST_DESTINATION, BEFORE_BOARDING_STOP, stale bus GPS uses the device, device outside the state ignored, pass NOT_YET_VALID).
+
 ## 2026-10-09, login email error (Dev B, branch b/email-delivery-error)
 
 **Done**

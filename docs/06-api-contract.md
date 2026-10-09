@@ -96,7 +96,7 @@ Rule: tickets or passes are created **only** inside the verify or webhook handle
 | GET | /tickets/:id/qr | holder | | `{ token, rotSecret, periodSec: 30, serverTime }`. `rotSecret` only when ACTIVE. See [07](07-ticket-and-pass-rules.md) | 7 |
 | POST | /tickets/:id/cancel | holder | | `{ ticket: TicketDto, refund: { amountPaise, status } }` | 7 |
 | POST | /tickets/:id/transfer | holder | `{ recipient: phone or email }` | `{ ticketId, recipientMasked }` | 8 |
-| POST | /tickets/validate | CONDUCTOR | `{ qr, tripId, deviceTime, offline?: false }` | `{ result: VALID or INVALID, reason: ScanReason, ticket?: { passengerName, seatNo, routeName, boarding, dropping, type } }`. p95 under 300 ms | 12 |
+| POST | /tickets/validate | CONDUCTOR | `{ qr, tripId, deviceTime, offline?: false, position?: { lat, lng, accuracyM? } }` | `{ result: VALID or INVALID, reason: ScanReason, ticket?: { passengerName, seatNo, routeName, boarding, dropping, type }, context?: { ..., boardingStop: { stopId, nameEn, nameTe, source } or null, ticketFrom?, ticketTo?, validFrom? } }`. `position` is the scanning device's, used when the bus GPS is stale (D-035). p95 under 300 ms | 12 |
 
 ### Passes and free travel
 

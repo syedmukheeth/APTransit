@@ -115,8 +115,14 @@ The server checks in this exact order and returns the first failing reason. Ever
 | 8 | Ticket status SCANNED or USED, or pass already scanned on this trip | `ALREADY_SCANNED` |
 | 9 | Ticket `tripId` equals the conductor's current trip | `WRONG_TRIP` |
 | 10 | Service date equals today (IST) | `WRONG_DATE` |
+| 10a | Ticket: the boarding stop resolved for this scan is at or after the ticket's dropping stop | `PAST_DESTINATION` |
+| 10b | Ticket: the resolved stop is more than 1 stop before the ticket's boarding stop | `BEFORE_BOARDING_STOP` |
+| 10c | Pass: scanned before `validFrom` | `NOT_YET_VALID` |
 | 11 | Pass: trip service type is in `eligibleServiceTypes` | `SERVICE_NOT_ELIGIBLE` |
+| 11a | Route restricted pass: the trip's route does not contain both pass stops (passes gain those stops in v2 P4) | `ROUTE_NOT_COVERED` |
 | 12 | All good: ticket ACTIVE to SCANNED (optimistic lock). Pass: record scan | `OK`, result VALID |
+
+**Boarding stop (D-035, checks 10a and 10b).** Resolved per scan, in this order: (1) the bus position in `bus:live:{tripId}` when it is newer than 60 s: the nearest route stop within 400 m whose seq is not past the next stop, source `BUS_GPS`; (2) else the scanning device's `position`, when it is inside the trip's state box, by the same rule (bounded by the trip's last stop plus one), source `DEVICE_GPS`; (3) else `NONE`. **With `NONE` every stop check is skipped**: bad GPS never strands a passenger. Every scan saves the bus, the stop (or null), `stopSource`, the position used, the validator kind and the device. Code: `apps/api/src/modules/conductor/boarding-stop.ts`.
 
 Target: p95 under 300 ms server side, under 2 s from camera to green screen.
 
