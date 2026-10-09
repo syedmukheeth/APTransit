@@ -25,7 +25,7 @@
     "light": "Light",
     "dark": "Dark",
     "system": "System",
-    "appDescription": "One connected public transport platform for Andhra Pradesh.",
+    "appDescription": "One connected public transport platform.",
     "useLightTheme": "Use light theme",
     "useDarkTheme": "Use dark theme",
     "notSelected": "Not selected",
@@ -1100,7 +1100,7 @@
     "routesTitle": "Routes",
     "routesDesc": "Manage bus routes, ordered stops, and route alignments.",
     "stopsTitle": "Stops",
-    "stopsDesc": "Bus stands, boarding and dropping points across Andhra Pradesh.",
+    "stopsDesc": "Bus stands, boarding and dropping points across the network.",
     "timetablesTitle": "Timetables",
     "timetablesDesc": "Scheduled departures, operating days, and trip generation.",
     "usersTitle": "Users and roles",
@@ -1233,13 +1233,13 @@
     "connecting": "Connecting to live updates",
     "liveUpdated": "Live, updated {seconds} s ago",
     "breadcrumb": "Location in the network",
-    "state": "Andhra Pradesh",
+    "state": "State",
     "district": "District",
     "depot": "Depot",
     "route": "Route",
     "trip": "Trip",
     "mapTitle": "Network map",
-    "mapLegend": "Map of Andhra Pradesh: district markers show active buses and delayed trips, dots show buses, triangles show incidents",
+    "mapLegend": "Map of the state: district markers show active buses and delayed trips, dots show buses, triangles show incidents",
     "mapError": "The map could not load.",
     "districts": "Districts",
     "districtMarker": "{name}: {buses} active buses, {delayed} delayed trips, {incidents} open incidents. Open the district.",
@@ -1372,7 +1372,10 @@
           "hint": "Route demand and service performance for a month."
         }
       }
-    }
+    },
+    "allStates": "All states",
+    "statePicker": "States",
+    "openState": "Open the command center of {name}"
   },
   "feedbackPage": {
     "title": "Feedback",

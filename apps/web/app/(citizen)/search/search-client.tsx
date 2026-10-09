@@ -7,6 +7,7 @@ import {
   formatMoney,
   formatTime,
   type PlaceDto,
+  PLATFORM_TIME_ZONE,
   SearchTripsResponse,
   ServiceDateString,
   type TripSummaryDto,
@@ -43,7 +44,7 @@ type TimeBand = (typeof TIME_BANDS)[number];
 
 function getIstHour(isoString: string): number {
   const hour = Number.parseInt(
-    new Intl.DateTimeFormat("en-GB", { timeZone: "Asia/Kolkata", hour: "numeric", hour12: false }).format(
+    new Intl.DateTimeFormat("en-GB", { timeZone: PLATFORM_TIME_ZONE, hour: "numeric", hour12: false }).format(
       new Date(isoString),
     ),
     10,
