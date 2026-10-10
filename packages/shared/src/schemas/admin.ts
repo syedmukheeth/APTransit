@@ -1,5 +1,5 @@
 import { z } from "zod";
-import { Role } from "../enums";
+import { EligibilityScheme, PassKind, PassValidityMode, Role, ServiceType } from "../enums";
 import { PublicId, ServiceDateString } from "./search";
 
 const name = z.string().trim().min(1).max(120);
@@ -255,3 +255,35 @@ export const OpsDepotDto = z.object({
   districtId: PublicId,
 });
 export const OpsBusTypeDto = z.object({ id: PublicId, nameEn: z.string(), nameTe: z.string() });
+
+/**
+ * Pass types (D-036): GET, POST /admin/pass-types and PATCH /admin/pass-types/:id (policy:write).
+ * Sold passes keep the values copied at purchase, so an edit applies to new sales only.
+ */
+export const AdminPassTypeInput = z
+  .object({
+    kind: PassKind,
+    nameEn: name,
+    nameTe: name,
+    durationDays: z.number().int().min(1).max(366),
+    validityMode: PassValidityMode,
+    pricePaise: paise,
+    eligibleServiceTypes: z.array(ServiceType).min(1),
+    scheme: EligibilityScheme.nullable(),
+    groupSize: z.number().int().min(1).max(10),
+    routeRestricted: z.boolean(),
+    isDemo: z.boolean(),
+    sortOrder: z.number().int().min(0).max(1000),
+    isActive: z.boolean(),
+    stateId: PublicId.nullable(),
+  })
+  .strict();
+export type AdminPassTypeInput = z.infer<typeof AdminPassTypeInput>;
+/** Kind, scheme and state are fixed once a type exists: they decide who may buy it and where. */
+export const AdminPassTypePatch = AdminPassTypeInput.omit({ kind: true, scheme: true, stateId: true })
+  .partial()
+  .strict()
+  .refine((x) => Object.keys(x).length > 0, { message: "Nothing to change" });
+export type AdminPassTypePatch = z.infer<typeof AdminPassTypePatch>;
+export const AdminPassTypeDto = AdminPassTypeInput.safeExtend({ id: PublicId, soldCount: z.number().int().nonnegative() }).strip();
+export type AdminPassTypeDto = z.infer<typeof AdminPassTypeDto>;

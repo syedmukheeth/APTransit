@@ -164,6 +164,11 @@ describe("Day 12 validation HTTP order", () => {
           qrSecret: qr.newRotSecret(),
           validFrom: new Date(+n - 600000),
           validUntil: new Date(+n + 600000),
+          // D-036 purchase time copy
+          eligibleServiceTypes: ["EXPRESS"],
+          groupSize: 1,
+          homeStopId: null,
+          destStopId: null,
         },
       ],
       passType: [{ id: "passtype000001", eligibleServiceTypes: ["EXPRESS"] }],
@@ -380,8 +385,49 @@ describe("Day 12 validation HTTP order", () => {
     tables.pass![0]!.status = "READY";
     expect((await scan(code).expect(200)).body.reason).toBe("NOT_ACTIVATED");
     tables.pass![0]!.status = "ACTIVE";
-    tables.passType![0]!.eligibleServiceTypes = ["SUPER_LUXURY"];
+    tables.pass![0]!.eligibleServiceTypes = ["SUPER_LUXURY"];
     expect((await scan(code).expect(200)).body.reason).toBe("SERVICE_NOT_ELIGIBLE");
+  });
+
+  describe("pass catalog rules (D-036)", () => {
+    it("a family pass boards 4 people on one trip and refuses the 5th, reporting n of 4", async () => {
+      tables.pass![0]!.groupSize = 4;
+      const results = [];
+      for (let i = 0; i < 5; i++) results.push((await scan(await content("P")).expect(200)).body);
+      expect(results.map((r) => r.reason)).toEqual(["OK", "OK", "OK", "OK", "ALREADY_SCANNED"]);
+      expect(results.map((r) => r.group)).toEqual([
+        { boarded: 1, size: 4 },
+        { boarded: 2, size: 4 },
+        { boarded: 3, size: 4 },
+        { boarded: 4, size: 4 },
+        { boarded: 4, size: 4 },
+      ]);
+      expect(results[4].earlierScanAt).toBeTruthy();
+      expect(tables.ticketScan!.filter((x) => x.result === "VALID")).toHaveLength(4);
+    });
+
+    it("two parallel scans of a family pass with one place left: exactly one boards", async () => {
+      tables.pass![0]!.groupSize = 4;
+      for (let i = 0; i < 3; i++) await scan(await content("P")).expect(200);
+      const [a, b] = await Promise.all([scan(await content("P")), scan(await content("P"))]);
+      expect([a.body.reason, b.body.reason].sort()).toEqual(["ALREADY_SCANNED", "OK"]);
+      expect(tables.ticketScan!.filter((x) => x.result === "VALID")).toHaveLength(4);
+    });
+
+    it("a single pass reports no group", async () => {
+      const res = await scan(await content("P")).expect(200);
+      expect(res.body.reason).toBe("OK");
+      expect(res.body.group).toBeUndefined();
+    });
+
+    it("a school pass works only on a route with both of its stops (ROUTE_NOT_COVERED)", async () => {
+      tables.pass![0]!.homeStopId = "stopknl0000001";
+      tables.pass![0]!.destStopId = "stopndl0000001";
+      expect((await scan(await content("P")).expect(200)).body.reason).toBe("OK");
+      tables.ticketScan = [];
+      tables.pass![0]!.destStopId = "stopvja0000001";
+      expect((await scan(await content("P")).expect(200)).body.reason).toBe("ROUTE_NOT_COVERED");
+    });
   });
   it("requires conductor auth and the current trip", async () => {
     const code = await content();

@@ -644,7 +644,9 @@
       "ACTIVE": "Active",
       "EXPIRED": "Expired",
       "CANCELLED": "Cancelled"
-    }
+    },
+    "covers": "Covers up to {count} people on the same bus",
+    "route": "{from} to {to}"
   },
   "passBuy": {
     "title": "Buy pass",
@@ -659,7 +661,24 @@
     "freeTitle": "Free travel (Stree Shakti)",
     "freeHint": "For women, girls and transgender persons who live in Andhra Pradesh.",
     "freeCta": "Check eligibility",
-    "errorTitle": "Passes could not load"
+    "errorTitle": "Passes could not load",
+    "demoPrice": "Demo price",
+    "demoNote": "Prices marked Demo price are placeholders until the transport department confirms them.",
+    "validityDay": "Until midnight on the day you activate it",
+    "covers": "Covers up to {count} people on the same bus",
+    "buy": "Buy for {amount}",
+    "buyLabel": "Buy {name} for {amount}",
+    "schoolCta": "Check eligibility and buy",
+    "forWho": {
+      "DAY": "For a day of trips, as many as you need.",
+      "WEEKLY": "For daily travel through the week.",
+      "MONTHLY": "For regular commuters.",
+      "FAMILY": "For a family travelling together.",
+      "SCHOOL": "For students, between home and school or college.",
+      "ANNUAL": "For a whole year of travel."
+    },
+    "emptyTitle": "No passes are on sale right now.",
+    "emptyHint": "Check again later, or travel with a single ticket."
   },
   "freeTravelPage": {
     "intro": "Women, girls and transgender persons who live in Andhra Pradesh travel free on these buses: {services}.",
@@ -979,7 +998,8 @@
         "line": "Not valid on this route",
         "helper": "This pass does not cover this route"
       }
-    }
+    },
+    "groupBoarded": "{boarded} of {size} boarded"
   },
   "opsApp": {
     "dashboard": "Depot dashboard",
@@ -1247,7 +1267,37 @@
     "users": "Users",
     "auditLogs": "Audit logs",
     "stops": "Stops",
-    "routes": "Routes"
+    "routes": "Routes",
+    "passTypes": {
+      "title": "Pass types",
+      "desc": "Prices and rules for new sales. Passes already sold keep what they were bought with.",
+      "openLink": "Manage pass types",
+      "name": "Pass",
+      "price": "Price",
+      "validity": "Validity",
+      "group": "People",
+      "sold": "Sold",
+      "demo": "Demo price",
+      "active": "On sale",
+      "edit": "Edit",
+      "editTitle": "Edit {name}",
+      "priceRupees": "Price in rupees",
+      "durationDays": "Days",
+      "groupSize": "People covered",
+      "sortOrder": "Order in the list",
+      "save": "Save for new sales",
+      "saved": "Pass type saved. New sales use it now.",
+      "untilDayEnd": "Until midnight",
+      "rollingDays": "{days, plural, one {# day} other {# days}}",
+      "yes": "Yes",
+      "no": "No",
+      "empty": "No pass types yet.",
+      "errors": {
+        "price": "Enter a price of 0 or more.",
+        "days": "Enter 1 to 366 days.",
+        "group": "Enter 1 to 10 people."
+      }
+    }
   },
   "govApp": {
     "title": "Command center",
@@ -1455,5 +1505,40 @@
     },
     "notYet": "not yet",
     "resolutionNote": "Note from the depot"
+  },
+  "schoolPass": {
+    "title": "School pass",
+    "intro": "For students travelling between home and their school or college. You declare that you study there; we never ask for or keep an ID number.",
+    "formTitle": "Check eligibility",
+    "consent": "I agree that this declaration is checked to give me a school pass.",
+    "isStudent": "I am a student at a school or college",
+    "institution": "Name of your school or college",
+    "institutionHint": "Used only for this check. We do not store it.",
+    "submit": "Check eligibility",
+    "errorSummary": "Please fix these:",
+    "errors": {
+      "consent": "Agree to the check to continue.",
+      "isStudent": "Confirm that you are a student.",
+      "institution": "Enter the name of your school or college.",
+      "stops": "Choose both stops.",
+      "sameStop": "Home and school stops must be different."
+    },
+    "eligibleTitle": "You can buy a school pass",
+    "stopsTitle": "Your route",
+    "stopsHint": "The pass works on buses whose route has both stops.",
+    "homeLabel": "Stop near home",
+    "destLabel": "Stop near school or college",
+    "placeholder": "Type a stop name",
+    "notEligibleTitle": "We could not confirm a school pass",
+    "reasons": {
+      "CONSENT_REQUIRED": "We need your agreement to run the check.",
+      "NOT_A_STUDENT": "The school pass is for students. You can buy a day, weekly or monthly pass.",
+      "INSTITUTION_REQUIRED": "Enter the name of your school or college and try again.",
+      "OTHER": "Something did not match. Try again or choose another pass."
+    },
+    "checkAgain": "Check again",
+    "otherPasses": "See other passes",
+    "errorTitle": "School pass could not load",
+    "done": "School pass bought. Activate it when you start travelling."
   }
 }

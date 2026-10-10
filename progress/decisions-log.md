@@ -326,6 +326,21 @@ The only way to change a locked doc in `docs/`. Add an entry, agree at the daily
   - The plan also named SCAN_RESULT_MAP in status.ts: result level tone and icon are unchanged, so it was left as is; reasons are copy only.
 - **Status:** Proposed for the other dev review. Docs updated in the same change (P3).
 
+### D-036: v2 pass catalog
+- **Date:** 2026-10-09
+- **Raised by:** Dev B then Dev A (v2 phase P4)
+- **Doc affected:** docs/05 (enums, pass_types, passes), 06 (POST /passes stops, POST /eligibility/student, /admin/pass-types), 07 section 8, 18 (G16 to G18), 19 (pass types)
+- **Problem:** only Weekly, Monthly and Free travel existed; validity was always activation plus N days; a pass boarded one person per trip; a price edit on the type would have changed sold passes.
+- **Decision:**
+  - New kinds DAY, FAMILY, SCHOOL, ANNUAL and scheme STUDENT in their own migration. `PassValidityMode` ROLLING_DAYS or UNTIL_DAY_END (23:59:59 IST of the activation day). Pass types gain validityMode, groupSize, routeRestricted, isDemo, sortOrder.
+  - Every pass copies price, duration, mode, services and group size at purchase (plus home and destination stops for SCHOOL); payments, validation and the pass screens read the copy. Existing passes were backfilled from their type (139 of 139 locally). So "changes apply to new sales only" holds by construction.
+  - Group rule replaces "once per trip": at most groupSize VALID scans of a pass on one trip, counted under the existing pass row lock; the result carries `group: { boarded, size }` and the scanner shows "2 of 4 boarded".
+  - SCHOOL: a STUDENT eligibility check (consent, student declaration, institution name sent to the mock provider and never stored, no ID number); purchase needs both stops; valid only on routes holding both (check 11a ROUTE_NOT_COVERED, wired in D-035).
+  - Admin: GET and POST /admin/pass-types, PATCH /admin/pass-types/:id (policy:write, zod, the admin rate limit, audit pass_type.create and pass_type.update). Kind, scheme and state cannot change after creation. Screen /admin/policies/pass-types.
+  - **Prices are DEMO values pending client confirmation** (docs/18 G16 to G18): Day 120, Weekly 450, Monthly 1,600, Family 1,000, School 600, Annual 15,000 rupees, in paise, `isDemo = true`, shown with a "Demo price" chip.
+  - Web: /passes/buy is a list of cards with one Buy button each; /passes/school clones the free travel flow; pass cards show "Covers up to 4 people" and the school route.
+- **Status:** Proposed for the other dev review. Prices pending client confirmation. Docs updated in the same change (P4).
+
 ### D-041: Login email failure answers 503 EMAIL_DELIVERY_FAILED
 - **Date:** 2026-10-09
 - **Raised by:** Dev B (v2 plan, section 1 "Login")

@@ -389,11 +389,10 @@ export class BookingsService {
     if (passengers !== 1) throw new AppError("PASS_NOT_ELIGIBLE", "Free travel books one seat at a time");
     const passes = await this.prisma.pass.findMany({
       where: { userId, status: "ACTIVE", passType: { kind: "FREE_TRAVEL" } },
-      include: { passType: { select: { eligibleServiceTypes: true } } },
     });
     const live = passes.find((p) => isPassLive(p, now));
     if (!live) throw new AppError("PASS_NOT_ELIGIBLE", "Free travel needs an active free travel pass");
-    return { id: live.id, eligibleServiceTypes: live.passType.eligibleServiceTypes };
+    return { id: live.id, eligibleServiceTypes: live.eligibleServiceTypes };
   }
 
   private async release(tripId: string, seatNos: string[], bookingId: string): Promise<void> {

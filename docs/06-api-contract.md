@@ -104,9 +104,10 @@ Rule: tickets or passes are created **only** inside the verify or webhook handle
 | --- | --- | --- | --- | --- | --- |
 | GET | /pass-types | public | | `PassTypeDto[]` | 8 |
 | GET | /passes | user | | `PassDto[]` | 8 |
-| POST | /passes | user | `{ passTypeId }` | `PassDto` (PENDING_PAYMENT, or READY for FREE_TRAVEL with a valid eligibility check) | 8 |
+| POST | /passes | user | `{ passTypeId, homeStopId?, destStopId? }` (both stops for a route restricted type, D-036) | `PassDto` (PENDING_PAYMENT, or READY for FREE_TRAVEL with a valid eligibility check). A type with a scheme needs a current ELIGIBLE check of that scheme (422 `ELIGIBILITY_REQUIRED`) | 8 |
 | POST | /passes/:id/activate | owner | | `PassDto` (ACTIVE, `validFrom`, `validUntil`) | 8 |
 | GET | /passes/:id/qr | owner | | same shape as ticket QR | 8 |
+| POST | /eligibility/student | user | `{ consent, declaration: { isStudent, institutionName } }`, strict (no ID number) | `{ checkId, scheme: STUDENT, result, reasonCode?, expiresAt }`. The institution name goes to the provider and is never stored (D-036) | v2 P4 |
 | POST | /eligibility/stree-shakti | user | `{ consent: true, declaration: { category: WOMAN or GIRL or TRANSGENDER, apDomicile: true }, idType: AADHAAR or VOTER_ID or RATION_CARD or OTHER_PHOTO_ID }` | `{ checkId, result, reasonCode?, expiresAt }` | 8 |
 | GET | /eligibility | user | | latest check per scheme | 8 |
 
@@ -174,6 +175,8 @@ All scoped to the caller's depot unless the caller has a district or state role.
 | GET | /admin/users `q?, role?` | users with roles | 14 |
 | POST, DELETE | /admin/users/:id/roles, /admin/users/:id/roles/:roleId | roles. POST body `{ role, depotId?, districtId?, stateId? }`: state roles need `stateId`; a STATE_ADMIN grants only inside their state (D-034) | 14 |
 | GET, PUT | /admin/fare-rules, /admin/refund-policies, /admin/settings | policy rows | 14 |
+| GET, POST | /admin/pass-types | policy:write. `AdminPassTypeDto[]` with `soldCount`; POST creates a type (audit `pass_type.create`) | v2 P4 |
+| PATCH | /admin/pass-types/:id | policy:write. Price, names, duration, mode, group size, services, demo, order, active; never kind, scheme or state. Applies to new sales only (audit `pass_type.update`, D-036) | v2 P4 |
 | GET | /admin/audit-logs `entityType?, entityId?, actorId?, from?, to?` | paginated audit rows | 14 |
 | GET | /admin/jobs/failed | last 50 failed background jobs with queue, name, reason, attempts, failedAt (STATE_ADMIN and up) | 18 |
 

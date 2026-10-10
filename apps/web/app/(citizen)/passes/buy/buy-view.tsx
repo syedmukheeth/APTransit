@@ -1,9 +1,9 @@
 "use client";
 
 import { formatMoney, PassDto, PassTypeDto } from "@aptransit/shared";
-import { Button, Card, ErrorState, Skeleton, toast } from "@aptransit/ui";
+import { Button, Card, EmptyState, ErrorState, Skeleton, ToneChip, toast } from "@aptransit/ui";
 import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
-import { ArrowRight, Check, HeartHandshake } from "lucide-react";
+import { ArrowRight, FlaskConical, HeartHandshake, Ticket, Users } from "lucide-react";
 import { useLocale, useTranslations } from "next-intl";
 import Link from "next/link";
 import { useRouter } from "next/navigation";
@@ -16,13 +16,17 @@ import { serviceList } from "../../../../lib/service-list";
 
 const PassTypes = z.array(PassTypeDto);
 
+/**
+ * /passes/buy (D-036): one card per pass with its price, validity, who it is for and one Buy
+ * button. Demo prices carry a chip. The school pass goes through its eligibility flow first.
+ */
 export function BuyPassView() {
   const t = useTranslations();
   const locale = useLocale();
   const router = useRouter();
   const queryClient = useQueryClient();
   const payment = usePayment();
-  const [selected, setSelected] = useState<string | null>(null);
+  const [buying, setBuying] = useState<string | null>(null);
 
   const typesQuery = useQuery({
     queryKey: queryKeys.passTypes,
@@ -42,8 +46,8 @@ export function BuyPassView() {
           {t("common.loading")}
         </span>
         <Skeleton className="h-9 w-40" />
-        <Skeleton className="h-36 w-full rounded-lg" />
-        <Skeleton className="h-36 w-full rounded-lg" />
+        <Skeleton className="h-40 w-full rounded-lg" />
+        <Skeleton className="h-40 w-full rounded-lg" />
       </div>
     );
   }
@@ -63,22 +67,21 @@ export function BuyPassView() {
 
   const paid = typesQuery.data.filter((type) => type.kind !== "FREE_TRAVEL");
   const free = typesQuery.data.find((type) => type.kind === "FREE_TRAVEL");
-  const chosen = paid.find((type) => type.id === selected) ?? null;
   const busy = create.isPending || payment.state.phase === "working" || payment.state.phase === "checking";
   const failure = create.error ? t(errorKey(create.error, (k) => t.has(k))) : payment.state.errorKey ? t(payment.state.errorKey) : null;
 
-  const buy = async () => {
-    if (!chosen) return;
+  const buy = async (type: PassTypeDto) => {
+    setBuying(type.id);
     let pass: PassDto;
     try {
-      pass = await create.mutateAsync(chosen.id);
+      pass = await create.mutateAsync(type.id);
     } catch {
       return;
     }
     await payment.pay({
       passId: pass.id,
       name: t("passBuy.paymentName"),
-      description: t("passBuy.paymentDescription", { name: pick(chosen) }),
+      description: t("passBuy.paymentDescription", { name: pick(type) }),
       onConfirmed: () => {
         void queryClient.invalidateQueries({ queryKey: queryKeys.passes });
         toast.success(t("passBuy.done"));
@@ -92,44 +95,64 @@ export function BuyPassView() {
       <h1 className="text-h1 text-fg">{t("passBuy.title")}</h1>
       <p className="text-body text-muted">{t("passBuy.intro")}</p>
 
-      <div role="group" aria-label={t("passBuy.choose")} className="flex flex-col gap-3">
-        {paid.map((type) => {
-          const isSelected = type.id === selected;
-          return (
-            <button
-              key={type.id}
-              type="button"
-              aria-pressed={isSelected}
-              onClick={() => setSelected(type.id)}
-              className={
-                isSelected
-                  ? "flex flex-col gap-2 rounded-lg border-2 border-primary bg-primary-soft p-4 text-left transition-colors duration-fast"
-                  : "flex flex-col gap-2 rounded-lg border border-default bg-surface-raised p-4 text-left transition-colors duration-fast hover:border-strong"
-              }
-            >
-              <span className="flex w-full items-start justify-between gap-3">
-                <span className="text-h3 text-fg">{pick(type)}</span>
-                <span className="flex items-center gap-2">
-                  <span className="text-h3 tabular-nums text-fg">{formatMoney(type.pricePaise, locale)}</span>
-                  {isSelected && <Check className="size-5 text-primary" aria-hidden="true" />}
-                </span>
-              </span>
-              <span className="text-small text-muted">{t("passBuy.validity", { days: type.durationDays })}</span>
-              <span className="text-small text-muted">{t("passBuy.services", { services: serviceList(type.eligibleServiceTypes, t, locale) })}</span>
-            </button>
-          );
-        })}
-      </div>
-
       {failure && (
         <p role="alert" className="text-small text-status-danger">
           {failure}
         </p>
       )}
 
-      <Button size="lg" disabled={!chosen} loading={busy} onClick={() => void buy()}>
-        {chosen ? t("passBuy.pay", { amount: formatMoney(chosen.pricePaise, locale) }) : t("passBuy.choose")}
-      </Button>
+      {paid.length === 0 && !free ? (
+        <EmptyState icon={Ticket} headingLevel="h2" title={t("passBuy.emptyTitle")} hint={t("passBuy.emptyHint")} />
+      ) : (
+        <ul className="flex flex-col gap-3" aria-label={t("passBuy.choose")}>
+          {paid.map((type) => {
+            const name = pick(type);
+            const amount = formatMoney(type.pricePaise, locale);
+            return (
+              <li key={type.id}>
+                <Card padding="md" className="flex flex-col gap-2">
+                  <div className="flex items-start justify-between gap-3">
+                    <h2 className="min-w-0 text-h3 text-fg">{name}</h2>
+                    <span className="text-h3 tabular-nums text-fg">{amount}</span>
+                  </div>
+                  {type.isDemo && <ToneChip tone="warning" size="sm" icon={FlaskConical} label={t("passBuy.demoPrice")} className="self-start" />}
+                  <p className="text-body text-fg">{t(`passBuy.forWho.${type.kind}`)}</p>
+                  <p className="text-small text-muted">
+                    {type.validityMode === "UNTIL_DAY_END" ? t("passBuy.validityDay") : t("passBuy.validity", { days: type.durationDays })}
+                  </p>
+                  {type.groupSize > 1 && (
+                    <p className="flex items-center gap-2 text-small text-fg">
+                      <Users className="size-4 shrink-0" aria-hidden="true" />
+                      {t("passBuy.covers", { count: type.groupSize })}
+                    </p>
+                  )}
+                  <p className="text-small text-muted">{t("passBuy.services", { services: serviceList(type.eligibleServiceTypes, t, locale) })}</p>
+                  {type.routeRestricted ? (
+                    <Button asChild variant="secondary" className="mt-2">
+                      <Link href="/passes/school">
+                        {t("passBuy.schoolCta")}
+                        <ArrowRight className="size-4" aria-hidden="true" />
+                      </Link>
+                    </Button>
+                  ) : (
+                    <Button
+                      className="mt-2"
+                      aria-label={t("passBuy.buyLabel", { name, amount })}
+                      loading={busy && buying === type.id}
+                      disabled={busy && buying !== type.id}
+                      onClick={() => void buy(type)}
+                    >
+                      {t("passBuy.buy", { amount })}
+                    </Button>
+                  )}
+                </Card>
+              </li>
+            );
+          })}
+        </ul>
+      )}
+
+      {paid.some((type) => type.isDemo) && <p className="text-small text-muted">{t("passBuy.demoNote")}</p>}
 
       {free && (
         <Card padding="md" className="flex flex-col gap-2">

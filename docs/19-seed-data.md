@@ -109,6 +109,20 @@ Example: Kurnool to Vijayawada, Express, 365 km: 365 x ₹1.40 = ₹511 + ₹30 
 
 All run every day (`daysMask` 127). Trips generated for today minus 14 days to today plus 7 days.
 
+## Pass types (D-036, DEMO prices)
+
+| Kind | Price | Validity | Group | Notes |
+| --- | --- | --- | --- | --- |
+| DAY | 12,000 paise | until 23:59:59 IST of activation day | 1 | |
+| WEEKLY | 45,000 paise | 7 days | 1 | |
+| MONTHLY | 160,000 paise | 30 days | 1 | |
+| FAMILY | 100,000 paise | 7 days | 4 | |
+| SCHOOL | 60,000 paise | 30 days | 1 | scheme STUDENT, route restricted |
+| ANNUAL | 1,500,000 paise | 365 days | 1 | |
+| FREE_TRAVEL | 0 | 365 days | 1 | scheme STREE_SHAKTI, not a demo price |
+
+All paid types have `isDemo = true` and are sold on the five standard services. The seed upserts by kind, so reseeding resets demo prices.
+
 ## Buses and staff
 
 - Registrations: `AP 39 Z 0101` to `AP 39 Z 0160` style, fictional. Assigned by depot and type so every timetable can be covered.

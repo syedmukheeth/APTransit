@@ -67,6 +67,8 @@ export const ValidateTicketResult = z.object({
         .optional(),
     })
     .optional(),
+  /** Group passes (D-036): VALID boardings on this trip so far, including this one, of size. */
+  group: z.object({ boarded: z.number().int().nonnegative(), size: z.number().int().positive() }).optional(),
   ticket: z
     .object({
       passengerName: z.string(),

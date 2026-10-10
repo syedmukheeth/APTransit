@@ -312,72 +312,31 @@ export async function runSeed(): Promise<void> {
   }
   console.log(`Bus types and fare rules seeded: ${busTypeMap.size}`);
 
-  // 7. Pass types (docs/07 section 8)
+  // 7. Pass types (docs/07 section 8). Prices are DEMO values pending client confirmation (D-036)
   const standardServices: Array<
     "PALLEVELUGU" | "ULTRA_PALLEVELUGU" | "CITY_ORDINARY" | "METRO_EXPRESS" | "EXPRESS"
   > = ["PALLEVELUGU", "ULTRA_PALLEVELUGU", "CITY_ORDINARY", "METRO_EXPRESS", "EXPRESS"];
-
+  const base = { eligibleServiceTypes: standardServices, scheme: null, validityMode: "ROLLING_DAYS" as const, groupSize: 1, routeRestricted: false, isDemo: true };
   const passTypes = [
-    {
-      kind: "WEEKLY" as const,
-      nameEn: "Weekly Pass",
-      nameTe: "వారపు పాస్",
-      durationDays: 7,
-      pricePaise: 45000,
-      eligibleServiceTypes: standardServices,
-      scheme: undefined,
-    },
-    {
-      kind: "MONTHLY" as const,
-      nameEn: "Monthly Pass",
-      nameTe: "నెలవారీ పాస్",
-      durationDays: 30,
-      pricePaise: 160000,
-      eligibleServiceTypes: standardServices,
-      scheme: undefined,
-    },
-    {
-      kind: "FREE_TRAVEL" as const,
-      nameEn: "Free Travel Pass (Stree Shakti)",
-      nameTe: "ఉచిత ప్రయాణ పాస్ (స్త్రీ శక్తి)",
-      durationDays: 365,
-      pricePaise: 0,
-      eligibleServiceTypes: standardServices,
-      scheme: "STREE_SHAKTI" as const,
-    },
+    { ...base, kind: "DAY" as const, nameEn: "Day Pass", nameTe: "రోజు పాస్", durationDays: 1, validityMode: "UNTIL_DAY_END" as const, pricePaise: 12000, sortOrder: 1 },
+    { ...base, kind: "WEEKLY" as const, nameEn: "Weekly Pass", nameTe: "వారపు పాస్", durationDays: 7, pricePaise: 45000, sortOrder: 2 },
+    { ...base, kind: "MONTHLY" as const, nameEn: "Monthly Pass", nameTe: "నెలవారీ పాస్", durationDays: 30, pricePaise: 160000, sortOrder: 3 },
+    { ...base, kind: "FAMILY" as const, nameEn: "Family Pass", nameTe: "కుటుంబ పాస్", durationDays: 7, pricePaise: 100000, groupSize: 4, sortOrder: 4 },
+    { ...base, kind: "SCHOOL" as const, nameEn: "School Pass", nameTe: "విద్యార్థి పాస్", durationDays: 30, pricePaise: 60000, scheme: "STUDENT" as const, routeRestricted: true, sortOrder: 5 },
+    { ...base, kind: "ANNUAL" as const, nameEn: "Annual Pass", nameTe: "వార్షిక పాస్", durationDays: 365, pricePaise: 1500000, sortOrder: 6 },
+    { ...base, kind: "FREE_TRAVEL" as const, nameEn: "Free Travel Pass (Stree Shakti)", nameTe: "ఉచిత ప్రయాణ పాస్ (స్త్రీ శక్తి)", durationDays: 365, pricePaise: 0, scheme: "STREE_SHAKTI" as const, isDemo: false, sortOrder: 7 },
   ];
 
   for (const pt of passTypes) {
     const existing = await prisma.passType.findFirst({
       where: { kind: pt.kind },
     });
+    const data = { ...pt, stateId: apStateId };
     if (existing) {
-      await prisma.passType.update({
-        where: { id: existing.id },
-        data: {
-          nameEn: pt.nameEn,
-          nameTe: pt.nameTe,
-          durationDays: pt.durationDays,
-          pricePaise: pt.pricePaise,
-          eligibleServiceTypes: pt.eligibleServiceTypes,
-          scheme: pt.scheme,
-          stateId: apStateId,
-        },
-      });
+      const { kind: _kind, ...rest } = data;
+      await prisma.passType.update({ where: { id: existing.id }, data: rest });
     } else {
-      await prisma.passType.create({
-        data: {
-          kind: pt.kind,
-          nameEn: pt.nameEn,
-          nameTe: pt.nameTe,
-          durationDays: pt.durationDays,
-          pricePaise: pt.pricePaise,
-          eligibleServiceTypes: pt.eligibleServiceTypes,
-          scheme: pt.scheme,
-          isActive: true,
-          stateId: apStateId,
-        },
-      });
+      await prisma.passType.create({ data: { ...data, isActive: true } });
     }
   }
   console.log("Pass types seeded.");

@@ -4,6 +4,14 @@ Newest day on top. Each dev adds their own block at the end of every day using `
 
 Severity: **S1** blocks the demo (fix today), **S2** wrong behaviour (fix this week), **S3** polish (known issues list).
 
+## v2 P4: 2026-10-09, pass catalog (Dev B and Dev A)
+
+**Done**
+- Schema: four pass kinds and STUDENT in their own migration; PassValidityMode; pass type rules; a purchase time copy on every pass (all 139 local passes backfilled); home and destination stops. Applied as an upgrade locally; no schema drift. Seed has the DEMO catalog.
+- pass-rules: validity per mode (DAY ends 23:59:59 IST), scheme eligibility for any type, group and route rules. STUDENT mock eligibility. Group rule in validation with `group` in the result. Payments, validation and bookings read the pass copy.
+- Admin pass type endpoints with audit; /admin/policies/pass-types editor.
+- Web: /passes/buy cards with Demo price chips, /passes/school flow, group and route on pass cards, "n of 4 boarded" on the scanner. E2E-6 buys and activates a Day pass (and a weekly one). en and te copy (Telugu added to progress/telugu-review.md). Docs 05, 06, 07 section 8, 18, 19; D-036.
+
 ## v2 P3: 2026-10-09, boarding record and segment validation (Dev B)
 
 **Done**

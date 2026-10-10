@@ -161,11 +161,17 @@ On success, in one transaction: `holderUserId` becomes the recipient, passenger 
 
 ## 8. Passes (plan sec 16 to 18, 102)
 
-| Pass type | Price **(A)** demo value | Duration | Valid on |
-| --- | --- | --- | --- |
-| Weekly | 450 rupees | 7 days from activation | Pallevelugu, Ultra Pallevelugu, City Ordinary, Metro Express, Express |
-| Monthly | 1,600 rupees | 30 days from activation | Same as weekly |
-| Free travel (Stree Shakti) | 0 | Until the eligibility check expires (365 days **(A)**) | Pallevelugu, Ultra Pallevelugu, City Ordinary, Metro Express, Express |
+| Pass type | Price **(A)** demo value | Validity after activation | Covers | Valid on |
+| --- | --- | --- | --- | --- |
+| Day | 120 rupees | Until 23:59:59 IST of the activation day (UNTIL_DAY_END) | 1 | Pallevelugu, Ultra Pallevelugu, City Ordinary, Metro Express, Express |
+| Weekly | 450 rupees | 7 days | 1 | Same |
+| Monthly | 1,600 rupees | 30 days | 1 | Same |
+| Family | 1,000 rupees | 7 days | Up to 4 people on the same trip | Same |
+| School | 600 rupees | 30 days | 1, only on routes with both the home and the school stop | Same; needs a STUDENT eligibility check |
+| Annual | 15,000 rupees | 365 days | 1 | Same |
+| Free travel (Stree Shakti) | 0 | Until the eligibility check expires (365 days **(A)**) | 1 | Same |
+
+**All prices except free travel are DEMO values** (`isDemo`, shown with a "Demo price" chip) until the client confirms them (D-036, docs/18). Admins change them at `/admin/policies/pass-types`; a change applies to new sales only, because each pass keeps a copy of price, duration, mode, services and group size from its purchase.
 
 Pass status machine:
 
@@ -180,11 +186,12 @@ stateDiagram-v2
   PENDING_PAYMENT --> CANCELLED: payment failed or abandoned 30 min
 ```
 
-- `validFrom = activatedAt`, `validUntil = activatedAt + durationDays`. Example: activated 10 September 08:00 IST, valid until 17 September 08:00 IST.
+- Validity starts at activation, never at purchase. ROLLING_DAYS: `validFrom = activatedAt`, `validUntil = activatedAt + durationDays`. Example: weekly bought Sunday 10:00, activated Sunday 12:00, valid until the next Sunday 12:00. UNTIL_DAY_END (Day pass): `validUntil` is 23:59:59 IST of the activation day. A scheme pass (free travel, school) never outlives its eligibility check.
 - Countdown on screen: "5 days 08 hours 21 minutes" (sec 16). Under 24 hours: "08 hours 21 minutes 09 seconds" updating every second. Updates on its own, no refresh.
 - One active pass per kind per user.
 - Passes are never giftable.
-- A pass can be scanned once per trip. Unlimited trips while ACTIVE.
+- A pass may have at most `groupSize` VALID scans on the same trip (D-036): 1 for most passes (once per trip), 4 for Family. The scanner shows "2 of 4 boarded". Unlimited trips while ACTIVE.
+- School pass: a STUDENT check (consent, "I am a student", institution name; the name is never stored, no ID number is asked for; mock provider), then the home and school stops chosen at purchase. It is valid only on trips whose route holds both stops (check 11a, `ROUTE_NOT_COVERED`).
 - `PASS_EXPIRING` notification 24 hours before `validUntil`.
 
 ## 9. Free travel (plan sec 19, 20, 51, 103)

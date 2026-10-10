@@ -64,8 +64,12 @@ export type PaymentStatus = z.infer<typeof PaymentStatus>;
 export const RefundStatus = z.enum(["PENDING", "PROCESSED", "FAILED"]);
 export type RefundStatus = z.infer<typeof RefundStatus>;
 
-export const PassKind = z.enum(["WEEKLY", "MONTHLY", "FREE_TRAVEL"]);
+export const PassKind = z.enum(["WEEKLY", "MONTHLY", "FREE_TRAVEL", "DAY", "FAMILY", "SCHOOL", "ANNUAL"]);
 export type PassKind = z.infer<typeof PassKind>;
+
+/** D-036: ROLLING_DAYS ends durationDays after activation, UNTIL_DAY_END at 23:59:59 IST of that day. */
+export const PassValidityMode = z.enum(["ROLLING_DAYS", "UNTIL_DAY_END"]);
+export type PassValidityMode = z.infer<typeof PassValidityMode>;
 
 export const PassStatus = z.enum(["PENDING_PAYMENT", "READY", "ACTIVE", "EXPIRED", "CANCELLED"]);
 export type PassStatus = z.infer<typeof PassStatus>;
@@ -148,7 +152,7 @@ export const NotificationType = z.enum([
 ]);
 export type NotificationType = z.infer<typeof NotificationType>;
 
-export const EligibilityScheme = z.enum(["STREE_SHAKTI"]);
+export const EligibilityScheme = z.enum(["STREE_SHAKTI", "STUDENT"]);
 export type EligibilityScheme = z.infer<typeof EligibilityScheme>;
 
 export const EligibilityResult = z.enum(["ELIGIBLE", "NOT_ELIGIBLE"]);

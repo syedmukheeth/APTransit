@@ -288,6 +288,27 @@ describe("Day 14 admin HTTP", () => {
           stateId: null,
         },
       ],
+      passType: [
+        {
+          id: "passtypeday00001",
+          kind: "DAY",
+          nameEn: "Day Pass",
+          nameTe: "Day te",
+          durationDays: 1,
+          validityMode: "UNTIL_DAY_END",
+          pricePaise: 12_000,
+          eligibleServiceTypes: ["EXPRESS"],
+          scheme: null,
+          groupSize: 1,
+          routeRestricted: false,
+          isDemo: true,
+          sortOrder: 1,
+          isActive: true,
+          stateId: null,
+        },
+      ],
+      // One sold DAY pass with its purchase time copy (D-036)
+      pass: [{ id: "passsold000001", passTypeId: "passtypeday00001", status: "READY", pricePaise: 12_000, durationDays: 1 }],
       fareRule: [
         {
           id: "fareruletest01",
@@ -331,7 +352,56 @@ describe("Day 14 admin HTTP", () => {
     request(app.getHttpServer())[method]("/api/v1/admin/" + path)
       .auth(token, { type: "bearer" })
       .send(body);
-  it.each(["stops", "routes", "timetables", "users", "fare-rules", "refund-policies", "settings"])(
+  describe("pass types (D-036)", () => {
+    const body = {
+      kind: "FAMILY",
+      nameEn: "Family Pass",
+      nameTe: "Family te",
+      durationDays: 7,
+      validityMode: "ROLLING_DAYS",
+      pricePaise: 100_000,
+      eligibleServiceTypes: ["EXPRESS"],
+      scheme: null,
+      groupSize: 4,
+      routeRestricted: false,
+      isDemo: true,
+      sortOrder: 4,
+      isActive: true,
+      stateId: null,
+    };
+
+    it("lists, creates and edits with policy:write and an audit row; sold passes keep their price", async () => {
+      expect((await get("pass-types", manager)).status).toBe(403);
+      const list = await get("pass-types").expect(200);
+      expect(list.body).toEqual([expect.objectContaining({ id: "passtypeday00001", pricePaise: 12_000, soldCount: 1 })]);
+
+      const edited = await write("patch", "pass-types/passtypeday00001", { pricePaise: 15_000, isDemo: false });
+      expect(edited.status, edited.text).toBe(200);
+      expect(edited.body).toMatchObject({ pricePaise: 15_000, isDemo: false, soldCount: 1 });
+      expect(tables.pass![0]).toMatchObject({ pricePaise: 12_000, durationDays: 1 });
+      expect(tables.auditLog!.find((a) => a.action === "pass_type.update")).toMatchObject({
+        entityId: "passtypeday00001",
+        before: expect.objectContaining({ pricePaise: 12_000 }),
+        after: expect.objectContaining({ pricePaise: 15_000 }),
+      });
+
+      const created = await write("post", "pass-types", body);
+      expect(created.status, created.text).toBe(201);
+      expect(created.body).toMatchObject({ kind: "FAMILY", groupSize: 4, soldCount: 0 });
+      expect(tables.auditLog!.map((a) => a.action)).toEqual(["pass_type.update", "pass_type.create"]);
+    });
+
+    it("refuses bad input and changes to kind, scheme or state", async () => {
+      expect((await write("patch", "pass-types/passtypeday00001", {})).status).toBe(400);
+      expect((await write("patch", "pass-types/passtypeday00001", { kind: "ANNUAL" })).status).toBe(400);
+      expect((await write("patch", "pass-types/passtypeday00001", { pricePaise: -1 })).status).toBe(400);
+      expect((await write("patch", "pass-types/passtypeday00001", { groupSize: 0 })).status).toBe(400);
+      expect((await write("post", "pass-types", { ...body, eligibleServiceTypes: [] })).status).toBe(400);
+      expect((await write("patch", "pass-types/missingpasstype1", { pricePaise: 1 })).status).toBe(404);
+      expect((await write("patch", "pass-types/passtypeday00001", { pricePaise: 1 }, manager)).status).toBe(403);
+    });
+  });
+  it.each(["stops", "routes", "timetables", "users", "fare-rules", "refund-policies", "settings", "pass-types"])(
     "enforces read permission matrix for %s",
     async (path) => {
       expect((await get(path, manager)).status).toBe(403);

@@ -12,6 +12,7 @@ import { PrismaService } from "../../prisma/prisma.service";
 import { RedisService } from "../../redis/redis.service";
 import { AuditService, type LogAuditParams } from "../audit/audit.service";
 import { QrService } from "../tickets/qr.service";
+import { passGroupFull, passRouteCovered } from "../passes/pass-rules";
 import { scanStatusReason } from "../tickets/ticket-rules";
 import { readLive } from "../tracking/live-state";
 import { type GpsBox, gpsBoxOf } from "../tracking/tracking.service";
@@ -140,6 +141,7 @@ export class ValidateService {
     let holderUserId: string | null = null;
     let earlierScanAt: string | undefined;
     let detail: ValidateTicketResult["ticket"];
+    let group: ValidateTicketResult["group"];
     let context: ValidateTicketResult["context"];
 
     const outcome = await this.prisma.$transaction(async (tx) => {
@@ -188,12 +190,16 @@ export class ValidateService {
                   validFrom: true,
                   validUntil: true,
                   qrSecret: true,
-                  passType: { select: { eligibleServiceTypes: true } },
+                  // The purchase time copy (D-036), not the pass type's current values
+                  eligibleServiceTypes: true,
+                  groupSize: true,
+                  homeStopId: true,
+                  destStopId: true,
                   user: { select: { name: true } },
+                  // Every VALID scan on this trip: a group pass may board groupSize people
                   scans: {
                     where: { tripId: ctx.tripId, result: "VALID" },
                     orderBy: { scannedAt: "asc" },
-                    take: 1,
                     select: { scannedAt: true },
                   },
                 },
@@ -217,7 +223,7 @@ export class ValidateService {
                   ticketTo: ticket.droppingStop,
                 }
               : {
-                  services: pass!.passType.eligibleServiceTypes,
+                  services: pass!.eligibleServiceTypes,
                   validFrom: pass!.validFrom?.toISOString() ?? null,
                 }),
           };
@@ -232,7 +238,7 @@ export class ValidateService {
                 status: row.status,
                 validUntil: row.validUntil,
                 now,
-                alreadyScanned: Boolean(earlier),
+                alreadyScanned: pass ? passGroupFull(pass.scans.length, pass.groupSize) : Boolean(earlier),
                 wrongTrip: Boolean(
                   ticket && (ticket.tripId !== ctx.tripId || payload.tr !== ticket.tripId),
                 ),
@@ -241,14 +247,14 @@ export class ValidateService {
                   (payload.d !== formatIstDate(now) ||
                     formatIstDate(ticket.trip.serviceDate) !== formatIstDate(now)),
                 ),
-                serviceEligible: !pass || pass.passType.eligibleServiceTypes.includes(ctx.serviceType),
+                serviceEligible: !pass || pass.eligibleServiceTypes.includes(ctx.serviceType),
                 // D-035 segment checks; a null stopSeq (source NONE) skips them
                 stopSeq: boarding.seq,
                 boardingSeq: ticket ? (seqOf.get(ticket.boardingStopId) ?? null) : null,
                 droppingSeq: ticket ? (seqOf.get(ticket.droppingStopId) ?? null) : null,
                 validFrom: pass?.validFrom ?? null,
-                // Route restricted passes (home and destination stops) arrive with the pass catalog (P4)
-                routeCovered: true,
+                // 11a: a route restricted pass (SCHOOL) only on routes with both of its stops (D-036)
+                routeCovered: !pass || passRouteCovered(pass, new Set(seqOf.keys())),
               })
             : "STALE_CODE";
           if (reason === "OK") {
@@ -274,15 +280,21 @@ export class ValidateService {
                 wrongDate: false,
                 serviceEligible: true,
               });
-              const winner = await tx.ticketScan.findFirst({
+              // The lock serializes scans of this pass, so the count is exact (D-036 group rule)
+              const boarded = await tx.ticketScan.findMany({
                 where: { passId: pass!.id, tripId: ctx.tripId, result: "VALID" },
+                orderBy: { scannedAt: "asc" },
+                select: { scannedAt: true },
               });
-              if (winner && reason === "OK") {
+              if (reason === "OK" && passGroupFull(boarded.length, pass!.groupSize)) {
                 reason = "ALREADY_SCANNED";
-                earlierScanAt = winner.scannedAt.toISOString();
+                earlierScanAt = boarded[0]!.scannedAt.toISOString();
               }
+              if (pass!.groupSize > 1)
+                group = { boarded: boarded.length + (reason === "OK" ? 1 : 0), size: pass!.groupSize };
             }
           }
+          if (pass && pass.groupSize > 1 && !group) group = { boarded: pass.scans.length, size: pass.groupSize };
           if (reason === "ALREADY_SCANNED" && !earlierScanAt) {
             const scanned =
               ticket?.scannedAt ??
@@ -365,6 +377,7 @@ export class ValidateService {
       reason,
       ...(earlierScanAt ? { earlierScanAt } : {}),
       ...(detail ? { ticket: detail } : {}),
+      ...(group ? { group } : {}),
       ...(context ? { context } : {}),
     };
   }

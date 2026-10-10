@@ -396,6 +396,9 @@ export function ConductorScanner() {
           )}
           <p className="text-display">{root(status.i18nKey)}</p>
           <p className="text-h2">{t("reasons." + result.reason + ".line")}</p>
+          {result.group && (
+            <p className="text-h2 tabular-nums">{t("groupBoarded", { boarded: result.group.boarded, size: result.group.size })}</p>
+          )}
           <p>{t("reasons." + result.reason + ".helper", helpers)}</p>
           {result.ticket && (
             <dl className="flex flex-col gap-3 text-h2">

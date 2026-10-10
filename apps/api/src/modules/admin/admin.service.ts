@@ -12,6 +12,8 @@ import {
   type GenerateTripsInput,
   type GrantRoleInput,
   type AdminFareInput,
+  type AdminPassTypeInput,
+  type AdminPassTypePatch,
   type AdminRefundInput,
   type AdminSettingsInput,
   AdminTimetableInput as TimetableSchema,
@@ -380,6 +382,36 @@ export class AdminService {
       await this.audit(tx, actor, "policy.update", "fare_rule", row.id, before, row);
       return timetableDto(row);
     });
+  }
+  /** GET /admin/pass-types (D-036): every type, with how many passes were sold of it. */
+  async passTypes() {
+    const rows = await this.prisma.passType.findMany({ orderBy: [{ sortOrder: "asc" }, { pricePaise: "asc" }] });
+    return Promise.all(rows.map(async (row) => ({ ...row, soldCount: await this.soldCount(this.prisma, row.id) })));
+  }
+  async createPassType(b: AdminPassTypeInput, actor: Actor) {
+    return this.write(async (tx) => {
+      if (b.stateId && !(await tx.state.findUnique({ where: { id: b.stateId } })))
+        throw new AppError("VALIDATION_FAILED", "State not found");
+      const row = await tx.passType.create({ data: b });
+      await this.audit(tx, actor, "pass_type.create", "pass_type", row.id, null, row);
+      return { ...row, soldCount: 0 };
+    });
+  }
+  /**
+   * PATCH /admin/pass-types/:id. Applies to new sales only: every sold pass carries its own copy of
+   * price, duration, mode, services and group size (D-036).
+   */
+  async updatePassType(id: string, b: AdminPassTypePatch, actor: Actor) {
+    return this.write(async (tx) => {
+      const before = await tx.passType.findUnique({ where: { id } });
+      if (!before) throw new AppError("NOT_FOUND", "Pass type not found");
+      const row = await tx.passType.update({ where: { id }, data: b });
+      await this.audit(tx, actor, "pass_type.update", "pass_type", id, before, row);
+      return { ...row, soldCount: await this.soldCount(tx, id) };
+    });
+  }
+  private soldCount(db: Pick<Tx, "pass">, passTypeId: string) {
+    return db.pass.count({ where: { passTypeId, status: { notIn: ["PENDING_PAYMENT", "CANCELLED"] } } });
   }
   async refunds() {
     return (await this.prisma.refundPolicy.findMany({ orderBy: { validFrom: "desc" } })).map(
