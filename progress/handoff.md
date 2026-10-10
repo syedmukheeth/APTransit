@@ -86,6 +86,8 @@ Work follows `prompts/v2-journey-plan.md`. P1 (minimal UI, D-033) is on main. P2
 | `createMany` seeds are slow | About 1,000 rows a second | `bulkInsert` with unnest in seed-history.ts |
 | A new class does nothing after the P1 refresh | New names: `bg-surface-sunken`, `border-hairline` (not `border-subtle`, that is the text colour), `text-display-lg`, `press-scale`, `animate-enter` | They are in `packages/ui/README.md`; run `pnpm check:classes` after a build |
 | `tokens.test.ts` fails after a colour edit | A text pair fell under 4.5:1 or a border under 3:1, or the two dark blocks differ | Fix the value; edit light, dark by system and dark by choice together |
+| Every page loads about 290 KB (gzip) of MapLibre | `export * from "./components/map-view"` in `packages/ui/src/index.ts` pulled it into the shared bundle | Import maps only through `next/dynamic(() => import("@aptransit/ui/map-view"))`; never from the `@aptransit/ui` index |
+| Every page ships all zod schemas (admin, gov, reports) | Web read the CommonJS build of `@aptransit/shared`, which cannot be tree shaken | `next.config.ts` aliases `@aptransit/shared` to its `src` and the package is `sideEffects: false`; the API still uses `dist` |
 | E2E-3 cannot find a far trip after many runs | Each run moves one trip tomorrow into its activation window | E2E-3 now runs `demo:window <ticket> reset` at the end; `pickTrip` also falls back to the day after |
 
 ---

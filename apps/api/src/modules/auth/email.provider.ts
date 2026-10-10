@@ -43,6 +43,8 @@ export class ResendEmailProvider implements EmailProvider {
     try {
       response = await fetch("https://api.resend.com/emails", {
         method: "POST",
+        // A hung provider must not hold the login request open: fail fast and let the user retry.
+        signal: AbortSignal.timeout(8_000),
         headers: {
           Authorization: `Bearer ${this.config.get("RESEND_API_KEY", { infer: true })}`,
           "Content-Type": "application/json",
