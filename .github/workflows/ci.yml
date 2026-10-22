@@ -65,8 +65,15 @@ jobs:
       - name: Build
         run: pnpm build
 
+      # The npm advisory endpoint sometimes fails for minutes; a real finding fails all three tries.
       - name: Audit production dependencies
-        run: pnpm audit --prod --audit-level high
+        run: |
+          for attempt in 1 2 3; do
+            pnpm audit --prod --audit-level high && exit 0
+            echo "Audit attempt $attempt failed, retrying in 30 s"
+            sleep 30
+          done
+          exit 1
 
   e2e:
     name: Playwright E2E
