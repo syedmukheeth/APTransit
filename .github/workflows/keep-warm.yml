@@ -1,0 +1,32 @@
+name: Keep demo warm
+
+# Free Render services sleep after 15 min idle and take about a minute to wake (docs/17).
+# A health read every 10 min keeps the API, its database and Redis awake, so screens load at once.
+# Run it by hand (Actions tab, "Run workflow") a few minutes before a demo.
+on:
+  schedule:
+    - cron: "*/10 * * * *"
+  workflow_dispatch:
+
+permissions:
+  contents: read
+
+jobs:
+  ping:
+    runs-on: ubuntu-latest
+    timeout-minutes: 5
+    env:
+      SITE_URL: https://ap-transit.vercel.app
+    steps:
+      - name: Wake the API
+        run: |
+          for attempt in 1 2 3 4 5 6; do
+            code=$(curl -s -o /dev/null -w "%{http_code}" --max-time 60 "$SITE_URL/api/v1/health" || true)
+            echo "health attempt $attempt: $code"
+            if [ "$code" = "200" ]; then
+              curl -s -o /dev/null --max-time 30 "$SITE_URL/api/v1/states" || true
+              exit 0
+            fi
+            sleep 10
+          done
+          echo "::warning::API health did not answer 200"
