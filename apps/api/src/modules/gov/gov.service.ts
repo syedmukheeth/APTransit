@@ -22,6 +22,8 @@ import { TrackingService } from "../tracking/tracking.service";
 const DAY_MS = 24 * 60 * 60 * 1000;
 const OPEN_INCIDENT = ["OPEN", "ACKNOWLEDGED"] as const;
 const SEATED = ["CANCELLED", "REFUNDED"] as const;
+/** How long gov screens share one read of the day's trips (they poll every 15 s). */
+const TRIPS_TTL_MS = 5_000;
 
 /** Counts for a set of trips of one service date. */
 interface TripCounts {
@@ -99,6 +101,8 @@ export function areaRows(scope: AnalyticsScope, rows: readonly DailyStatsRow[], 
  */
 @Injectable()
 export class GovService {
+  private readonly tripsCache = new Map<string, { at: number; rows: Promise<TripRow[]> }>();
+
   constructor(
     private readonly prisma: PrismaService,
     private readonly analytics: AnalyticsService,
@@ -387,11 +391,27 @@ export class GovService {
     };
   }
 
+  /**
+   * Overview and map load the same trips of the day in parallel, and every socket refresh asks
+   * again, so one read is shared for TRIPS_TTL_MS (calls in flight share the same promise).
+   */
   private trips(date: string, depotIds: string[]): Promise<TripRow[]> {
-    return this.prisma.trip.findMany({
-      where: { serviceDate: serviceDateOf(date), route: { depotId: { in: depotIds } } },
-      select: tripSelect,
+    const key = `${date}|${[...depotIds].sort().join(",")}`;
+    const now = Date.now();
+    const hit = this.tripsCache.get(key);
+    if (hit && now - hit.at < TRIPS_TTL_MS) return hit.rows;
+    for (const [k, v] of this.tripsCache) if (now - v.at >= TRIPS_TTL_MS) this.tripsCache.delete(k);
+    const rows = Promise.resolve(
+      this.prisma.trip.findMany({
+        where: { serviceDate: serviceDateOf(date), route: { depotId: { in: depotIds } } },
+        select: tripSelect,
+      }),
+    );
+    this.tripsCache.set(key, { at: now, rows });
+    rows.catch(() => {
+      if (this.tripsCache.get(key)?.rows === rows) this.tripsCache.delete(key);
     });
+    return rows;
   }
 
   /** Complaints of depots in scope; state and platform roles also see complaints without a depot. */
